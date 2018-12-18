@@ -20,6 +20,12 @@ new Vue({
                 function signUpCallback(err, result) {
                     if (!err) {
                         alert('register success');
+                        var cognitoUser = result.user;
+                        console.log('user name is ' + cognitoUser.getUsername());
+                        var confirmation = ('Registration successful. Please check your email inbox or spam folder for your verification code.');
+                        if (confirmation) {
+                            window.location.href = 'verify.html';
+                        }
                     } else {
                         alert('register failed', err);
                     }
@@ -57,6 +63,33 @@ new Vue({
                 },
                 onFailure: function (err) {
                     alert(err);
+                }
+            });
+        }
+    }
+})
+
+new Vue({
+    el: '#verifyForm',
+    data: {
+        email: '',
+        code: ''
+    },
+    methods: {
+        submit: function () {
+            console.log('verify', this.email, this.code);
+
+            var cognitoUser = new AmazonCognitoIdentity.CognitoUser({
+                Username: this.email,
+                Pool: userPool
+            });
+
+            cognitoUser.confirmRegistration(this.code, true, function confirmCallback(err, result) {
+                if (!err) {
+                    alert("verify email successfully", result);
+                    window.location.href = "signin.html";
+                } else {
+                    alert("failed to verify email", err);
                 }
             });
         }
