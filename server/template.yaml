@@ -1,9 +1,7 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
 Description: >
-    sam-app
-
-    Sample SAM Template for sam-app
+    BeFree
     
 # More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
 Globals:
@@ -12,30 +10,134 @@ Globals:
 
 
 Resources:
+    BefreeApi:
+        Type: AWS::Serverless::Api
+        Properties:
+            StageName: prod
+            Cors: "'*'"
+            Auth:
+                DefaultAuthorizer: BefreeAuthorizer
+                Authorizers:
+                    BefreeAuthorizer:
+                        UserPoolArn: !GetAtt BefreeUserPool.Arn
 
-    HelloWorldFunction:
+    BefreeUserPool:
+        Type: "AWS::Cognito::UserPool"
+        Properties:
+            UserPoolName: befree
+            Policies:
+                PasswordPolicy:
+                    MinimumLength: 8
+            AutoVerifiedAttributes:
+                - email
+            Schema:
+                - AttributeDataType: String
+                  Name: email
+                  Required: true
+
+    BefreeUserPoolClient:
+        Type: AWS::Cognito::UserPoolClient
+        Properties:
+            UserPoolId: !Ref BefreeUserPool
+            ClientName: befree
+            GenerateSecret: false
+
+    CommentFunction:
         Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
         Properties:
             CodeUri: befree/
-            Handler: app.lambdaHandler
+            Handler: app.commentHandler
             Runtime: nodejs8.10
             Events:
-                HelloWorld:
+                Comment:
                     Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
                     Properties:
-                        Path: /hello
+                        Path: /comment
+                        Method: post
+                        RestApiId: !Ref BefreeApi
+
+    BetFunction:
+        Type: AWS::Serverless::Function
+        Properties:
+            CodeUri: befree/
+            Handler: app.betHandler
+            Runtime: nodejs8.10
+            Events:
+                Bet:
+                    Type: Api
+                    Properties:
+                        Path: /bet
+                        Method: post
+                        RestApiId: !Ref BefreeApi
+
+    LikeFunction:
+        Type: AWS::Serverless::Function
+        Properties:
+            CodeUri: befree/
+            Handler: app.likeHandler
+            Runtime: nodejs8.10
+            Events:
+                Like:
+                    Type: Api
+                    Properties:
+                        Path: /like
+                        Method: post
+                        RestApiId: !Ref BefreeApi
+
+    GetCommentsFunction:
+        Type: AWS::Serverless::Function
+        Properties:
+            CodeUri: befree/
+            Handler: app.getCommentsHandler
+            Runtime: nodejs8.10
+            Events:
+                GetComments:
+                    Type: Api
+                    Properties:
+                        Path: /comments
                         Method: get
+                        RestApiId: !Ref BefreeApi
+                        Auth:
+                            Authorizer: NONE
+    
+    GetMatchesFunction:
+        Type: AWS::Serverless::Function
+        Properties:
+            CodeUri: befree/
+            Handler: app.getMatchesHandler
+            Runtime: nodejs8.10
+            Events:
+                GetMatches:
+                    Type: Api
+                    Properties:
+                        Path: /matches
+                        Method: get
+                        RestApiId: !Ref BefreeApi
+                        Auth:
+                            Authorizer: NONE
 
-Outputs:
+    MatchDetailFunction:
+        Type: AWS::Serverless::Function
+        Properties:
+            CodeUri: befree/
+            Handler: app.matchDetailHandler
+            Runtime: nodejs8.10
+            Events:
+                MatchDetail:
+                    Type: Api
+                    Properties:
+                        Path: /match
+                        Method: get
+                        RestApiId: !Ref BefreeApi
+                        Auth:
+                            Authorizer: NONE
 
-    HelloWorldApi:
-      Description: "API Gateway endpoint URL for Prod stage for Hello World function"
-      Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/hello/"
+    # MatchTable:
+    #     Type: AWS::DynamoDB::Table
+    #     Properties:
+    #         TableName: Match
 
-    HelloWorldFunction:
-      Description: "Hello World Lambda Function ARN"
-      Value: !GetAtt HelloWorldFunction.Arn
-
-    HelloWorldFunctionIamRole:
-      Description: "Implicit IAM Role created for Hello World function"
-      Value: !GetAtt HelloWorldFunctionRole.Arn
+    # CommentsTable:
+    #     Type: AWS::DynamoDB::Table
+    #     Properties:
+    #         TableName: Comment

@@ -13,18 +13,52 @@ new Vue({
                 Name: 'email',
                 Value: this.user.email,
             };
-            
+
             var attributeEmail = new AmazonCognitoIdentity.CognitoUserAttribute(dataEmail);
 
             userPool.signUp(this.user.email, this.user.password, [attributeEmail], null,
                 function signUpCallback(err, result) {
                     if (!err) {
-                        console.log('register success');
+                        alert('register success');
                     } else {
-                        console.log('register failed');
+                        alert('register failed', err);
                     }
                 }
             );
+        }
+    }
+})
+
+new Vue({
+    el: '#signinForm',
+    data: {
+        user: {
+            email: '',
+            password: '',
+        }
+    },
+    methods: {
+        submit: function () {
+            console.log(this.user.email, this.user.password);
+            var authenticationDetails = new AmazonCognitoIdentity.AuthenticationDetails({
+                Username: this.user.email,
+                Password: this.user.password
+            });
+
+            var cognitoUser = new AmazonCognitoIdentity.CognitoUser({
+                Username: this.user.email,
+                Pool: userPool
+            });
+
+            cognitoUser.authenticateUser(authenticationDetails, {
+                onSuccess: function (result) {
+                    alert('Successfully Logged In');
+                    // window.location.href = 'ride.html';
+                },
+                onFailure: function (err) {
+                    alert(err);
+                }
+            });
         }
     }
 })

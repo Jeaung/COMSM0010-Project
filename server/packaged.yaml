@@ -1,43 +1,132 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: 'sam-app
-
-  Sample SAM Template for sam-app
+Description: 'BeFree
 
   '
 Globals:
   Function:
     Timeout: 3
-Outputs:
-  HelloWorldApi:
-    Description: API Gateway endpoint URL for Prod stage for Hello World function
-    Value:
-      Fn::Sub: https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/hello/
-  HelloWorldFunction:
-    Description: Hello World Lambda Function ARN
-    Value:
-      Fn::GetAtt:
-      - HelloWorldFunction
-      - Arn
-  HelloWorldFunctionIamRole:
-    Description: Implicit IAM Role created for Hello World function
-    Value:
-      Fn::GetAtt:
-      - HelloWorldFunctionRole
-      - Arn
 Resources:
-  HelloWorldFunction:
+  BefreeApi:
     Properties:
-      CodeUri: s3://befree-bruce-jeaung-pre/005f5350c508b72029ae406cebf5577e
-      Environment:
-        Variables:
-          PARAM1: VALUE
+      Auth:
+        Authorizers:
+          BefreeAuthorizer:
+            UserPoolArn:
+              Fn::GetAtt:
+              - BefreeUserPool
+              - Arn
+        DefaultAuthorizer: BefreeAuthorizer
+      Cors: '''*'''
+      StageName: prod
+    Type: AWS::Serverless::Api
+  BefreeUserPool:
+    Properties:
+      AutoVerifiedAttributes:
+      - email
+      Policies:
+        PasswordPolicy:
+          MinimumLength: 8
+      Schema:
+      - AttributeDataType: String
+        Name: email
+        Required: true
+      UserPoolName: befree
+    Type: AWS::Cognito::UserPool
+  BefreeUserPoolClient:
+    Properties:
+      ClientName: befree
+      GenerateSecret: false
+      UserPoolId:
+        Ref: BefreeUserPool
+    Type: AWS::Cognito::UserPoolClient
+  BetFunction:
+    Properties:
+      CodeUri: s3://befree-bruce-jeaung-pre/e0ec92dc1c1b671a5a28c69af37aa932
       Events:
-        HelloWorld:
+        Bet:
           Properties:
-            Method: get
-            Path: /hello
+            Method: post
+            Path: /bet
+            RestApiId:
+              Ref: BefreeApi
           Type: Api
-      Handler: app.lambdaHandler
+      Handler: app.betHandler
+      Runtime: nodejs8.10
+    Type: AWS::Serverless::Function
+  CommentFunction:
+    Properties:
+      CodeUri: s3://befree-bruce-jeaung-pre/e0ec92dc1c1b671a5a28c69af37aa932
+      Events:
+        Comment:
+          Properties:
+            Method: post
+            Path: /comment
+            RestApiId:
+              Ref: BefreeApi
+          Type: Api
+      Handler: app.commentHandler
+      Runtime: nodejs8.10
+    Type: AWS::Serverless::Function
+  GetCommentsFunction:
+    Properties:
+      CodeUri: s3://befree-bruce-jeaung-pre/e0ec92dc1c1b671a5a28c69af37aa932
+      Events:
+        GetComments:
+          Properties:
+            Auth:
+              Authorizer: NONE
+            Method: get
+            Path: /comments
+            RestApiId:
+              Ref: BefreeApi
+          Type: Api
+      Handler: app.getCommentsHandler
+      Runtime: nodejs8.10
+    Type: AWS::Serverless::Function
+  GetMatchesFunction:
+    Properties:
+      CodeUri: s3://befree-bruce-jeaung-pre/e0ec92dc1c1b671a5a28c69af37aa932
+      Events:
+        GetMatches:
+          Properties:
+            Auth:
+              Authorizer: NONE
+            Method: get
+            Path: /matches
+            RestApiId:
+              Ref: BefreeApi
+          Type: Api
+      Handler: app.getMatchesHandler
+      Runtime: nodejs8.10
+    Type: AWS::Serverless::Function
+  LikeFunction:
+    Properties:
+      CodeUri: s3://befree-bruce-jeaung-pre/e0ec92dc1c1b671a5a28c69af37aa932
+      Events:
+        Like:
+          Properties:
+            Method: post
+            Path: /like
+            RestApiId:
+              Ref: BefreeApi
+          Type: Api
+      Handler: app.likeHandler
+      Runtime: nodejs8.10
+    Type: AWS::Serverless::Function
+  MatchDetailFunction:
+    Properties:
+      CodeUri: s3://befree-bruce-jeaung-pre/e0ec92dc1c1b671a5a28c69af37aa932
+      Events:
+        MatchDetail:
+          Properties:
+            Auth:
+              Authorizer: NONE
+            Method: get
+            Path: /match
+            RestApiId:
+              Ref: BefreeApi
+          Type: Api
+      Handler: app.matchDetailHandler
       Runtime: nodejs8.10
     Type: AWS::Serverless::Function
 Transform: AWS::Serverless-2016-10-31
