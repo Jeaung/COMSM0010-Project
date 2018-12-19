@@ -55,6 +55,10 @@ Resources:
                         Path: /comment
                         Method: post
                         RestApiId: !Ref BefreeApi
+            Role:
+                Fn::GetAtt:
+                    - BackingLambdaExecutionRole
+                    - Arn
 
     BetFunction:
         Type: AWS::Serverless::Function
@@ -69,6 +73,10 @@ Resources:
                         Path: /bet
                         Method: post
                         RestApiId: !Ref BefreeApi
+            Role:
+                Fn::GetAtt:
+                    - BackingLambdaExecutionRole
+                    - Arn
 
     LikeFunction:
         Type: AWS::Serverless::Function
@@ -83,22 +91,10 @@ Resources:
                         Path: /like
                         Method: post
                         RestApiId: !Ref BefreeApi
-
-    GetCommentsFunction:
-        Type: AWS::Serverless::Function
-        Properties:
-            CodeUri: befree/
-            Handler: app.getCommentsHandler
-            Runtime: nodejs8.10
-            Events:
-                GetComments:
-                    Type: Api
-                    Properties:
-                        Path: /comments
-                        Method: get
-                        RestApiId: !Ref BefreeApi
-                        Auth:
-                            Authorizer: NONE
+            Role:
+                Fn::GetAtt:
+                    - BackingLambdaExecutionRole
+                    - Arn
     
     GetMatchesFunction:
         Type: AWS::Serverless::Function
@@ -115,6 +111,10 @@ Resources:
                         RestApiId: !Ref BefreeApi
                         Auth:
                             Authorizer: NONE
+        Role:
+                Fn::GetAtt:
+                    - BackingLambdaExecutionRole
+                    - Arn
 
     MatchDetailFunction:
         Type: AWS::Serverless::Function
@@ -131,13 +131,123 @@ Resources:
                         RestApiId: !Ref BefreeApi
                         Auth:
                             Authorizer: NONE
+            Role:
+                Fn::GetAtt:
+                    - BackingLambdaExecutionRole
+                    - Arn
+    
+    CrawlerFunction:
+        Type: AWS::Serverless::Function
+        Properties:
+            CodeUri: befree/
+            Handler: crawler.accountingHandler
+            Runtime: nodejs8.10
+            Role:
+                Fn::GetAtt:
+                    - BackingLambdaExecutionRole
+                    - Arn
 
-    # MatchTable:
-    #     Type: AWS::DynamoDB::Table
-    #     Properties:
-    #         TableName: Match
+    ScheduledRule: 
+        Type: "AWS::Events::Rule"
+        Properties: 
+            ScheduleExpression: "rate(10 minutes)"
+            State: "ENABLED"
+            Targets: 
+                - 
+                    Arn: 
+                        Fn::GetAtt: 
+                            - "CrawlerFunction"
+                            - "Arn"
+                    Id: "AccountingScheduler"
 
-    # CommentsTable:
-    #     Type: AWS::DynamoDB::Table
-    #     Properties:
-    #         TableName: Comment
+    PermissionForSchedulingCrawler:
+        Type: "AWS::Lambda::Permission"
+        Properties: 
+            FunctionName: 
+                Ref: "CrawlerFunction"
+            Action: "lambda:InvokeFunction"
+            Principal: "events.amazonaws.com"
+            SourceArn: 
+                Fn::GetAtt: 
+                    - "ScheduledRule"
+                    - "Arn"
+    
+    BackingLambdaExecutionRole:
+        Type: AWS::IAM::Role
+        Properties:
+            AssumeRolePolicyDocument:
+                Version: '2012-10-17'
+                Statement:
+                    - 
+                        Effect: Allow
+                        Principal:
+                            Service:
+                                - lambda.amazonaws.com
+                        Action:
+                            - sts:AssumeRole
+            Policies:
+                - 
+                    PolicyName: BaseLambdaPolicy
+                    PolicyDocument:
+                        Version: '2012-10-17'
+                        Statement:
+                            - 
+                                Effect: Allow
+                                Action:
+                                    - dynamodb:DeleteItem
+                                    - dynamodb:GetItem
+                                    - dynamodb:BatchGetItem
+                                    - dynamodb:BatchWriteItem
+                                    - dynamodb:PutItem
+                                    - dynamodb:Query
+                                    - dynamodb:Scan
+                                    - dynamodb:UpdateItem
+                                Resource:
+                                    Fn::Join:
+                                        - ''
+                                        - 
+                                            - 'arn:aws:dynamodb:'
+                                            - Ref: AWS::Region
+                                            - ":"
+                                            - Ref: AWS::AccountId
+                                            - ":table/"
+                                            - Ref: MatchTable
+                            -
+                                Effect: Allow
+                                Action:
+                                    - logs:CreateLogGroup
+                                    - logs:CreateLogStream
+                                    - logs:PutLogEvents
+                                Resource: "*"
+
+    MatchTable:
+        Type: AWS::DynamoDB::Table
+        Properties:
+            TableName: Match
+            AttributeDefinitions:
+                -
+                    AttributeName: "Id"
+                    AttributeType: "N"
+            KeySchema:
+                -
+                    AttributeName: "Id"
+                    KeyType: "HASH"
+            ProvisionedThroughput:
+                ReadCapacityUnits: 5
+                WriteCapacityUnits: 5
+
+    CommentsTable:
+        Type: AWS::DynamoDB::Table
+        Properties:
+            TableName: Comment
+            AttributeDefinitions:
+                -
+                    AttributeName: "MatchId"
+                    AttributeType: "N"
+            KeySchema:
+                -
+                    AttributeName: "MatchId"
+                    KeyType: "HASH"
+            ProvisionedThroughput:
+                ReadCapacityUnits: 5
+                WriteCapacityUnits: 5

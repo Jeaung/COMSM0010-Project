@@ -1,17 +1,14 @@
 {
   "name": "befree",
   "version": "1.0.0",
-  "description": "hello world sample for NodeJS",
   "main": "src/index.js",
-  "repository": "https://github.com/awslabs/aws-sam-cli/tree/develop/samcli/local/init/templates/cookiecutter-aws-sam-hello-nodejs",
-  "author": "SAM CLI",
-  "license": "MIT",
   "dependencies": {
-    "axios": "^0.18.0"
+    "aws-sdk": "^2.378.0",
+    "axios": "^0.18.0",
+    "moment": "^2.23.0"
   },
   "scripts": {
     "test": "mocha tests/unit/"
   },
-  "devDependencies": {
-  }
+  "devDependencies": {}
 }
