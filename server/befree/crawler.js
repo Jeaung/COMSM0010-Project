@@ -2,9 +2,8 @@
 
 const axios = require('axios');
 const moment = require('moment');
-const AWS = require("aws-sdk");
-
-const ddb = new AWS.DynamoDB.DocumentClient();
+const mysql = require('mysql2/promise');
+const config = require('config');
 
 exports.accountingHandler = async (event, context, callback) => {
     var today = moment();
@@ -21,57 +20,44 @@ exports.accountingHandler = async (event, context, callback) => {
 
         console.log(response.data.matches.length, "matches in total")
 
-        var putRequests = [];
-
-        // update yesterday's matches & insert today's matches
+        var args = [];
+        var sqlSb = '';
         response.data.matches.forEach(function (match) {
+            if (args.length != 0) {
+                sqlSb = sqlSb.concat(',');
+            }
+            sqlSb = sqlSb.concat('(?,?,?,?,?,?,?)');
+
             var matchDate = moment(match.utcDate, "YYYY-MM-DDTHH:mm:ssZ");
 
             if (match.status == 'FINISHED') {
-                putRequests.push({
-                    PutRequest: {
-                        Item: {
-                            Id: match.id,
-                            HomeTeam: match.homeTeam.name,
-                            AwayTeam: match.awayTeam.name,
-                            HomeScore: match.score.fullTime.homeTeam,
-                            AwayScore: match.score.fullTime.awayTeam,
-                            League: match.competition.name,
-                            DateTime: matchDate.valueOf(),
-                            Status: match.status
-                        }
-                    }
-                });
+                args.push(match.id, match.homeTeam.name, match.awayTeam.name, match.score.fullTime.homeTeam, match.score.fullTime.awayTeam, matchDate.unix(), match.status);
             } else {
-                putRequests.push({
-                    PutRequest: {
-                        Item: {
-                            Id: match.id,
-                            HomeTeam: match.homeTeam.name,
-                            AwayTeam: match.awayTeam.name,
-                            League: match.competition.name,
-                            DateTime: matchDate.valueOf(),
-                            Status: match.status
-                        }
-                    }
-                });
+                args.push(match.id, match.homeTeam.name, match.awayTeam.name, 0, 0, matchDate.unix(), match.status);
             }
         });
 
-        var params = {
-            RequestItems: {
-                "Match": putRequests
-            }
-        }
+        const connection = await mysql.createConnection({
+            host: config.get('db_config.host'),
+            port: config.get('db_config.port'),
+            user: config.get('db_config.user'),
+            password: config.get('db_config.password'),
+            database: config.get('db_config.database')
+        });
 
-        var ddbRes = await ddb.batchWrite(params).promise();
-        console.log('ddb response', ddbRes);
+        var sql = 'replace into matches (id, home_team, away_team, home_score, away_score, date_time, status) values ' + sqlSb;
+        console.log('crawler update db sql', sql, 'args', args);
+
+        var result = await connection.execute(sql, args);
+
+        console.log('crawler update db result', result);
 
         // TODO performing accounting to add points to winners
         // TODO update ranking lists
-        callback(null, 'Success!');
+
+        return "success";
     } catch (e) {
-        console.log(err, err.stack);
-        callback(err.message);
+        console.log(e, e.stack);
+        return "error";
     }
 }

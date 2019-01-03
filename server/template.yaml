@@ -146,11 +146,40 @@ Resources:
                 Fn::GetAtt:
                     - BackingLambdaExecutionRole
                     - Arn
+            VpcConfig:
+                SecurityGroupIds:
+                    -
+                        Fn::GetAtt:
+                            - SecurityGroup
+                            - GroupId
+                SubnetIds:
+                    - Ref: Subnet1
+                    - Ref: Subnet2
+    
+    InitFunction:
+        Type: AWS::Serverless::Function
+        Properties:
+            CodeUri: befree/
+            Handler: init.initHandler
+            Runtime: nodejs8.10
+            Role:
+                Fn::GetAtt:
+                    - BackingLambdaExecutionRole
+                    - Arn
+            VpcConfig:
+                SecurityGroupIds:
+                    -
+                        Fn::GetAtt:
+                            - SecurityGroup
+                            - GroupId
+                SubnetIds:
+                    - Ref: Subnet1
+                    - Ref: Subnet2
 
     ScheduledRule: 
         Type: "AWS::Events::Rule"
         Properties: 
-            ScheduleExpression: "rate(10 minutes)"
+            ScheduleExpression: "cron(0 1 * * ? *)"
             State: "ENABLED"
             Targets: 
                 - 
@@ -211,7 +240,7 @@ Resources:
                                             - ":"
                                             - Ref: AWS::AccountId
                                             - ":table/"
-                                            - Ref: MatchTable
+                                            - Ref: CommentTable
                             -
                                 Effect: Allow
                                 Action:
@@ -219,24 +248,177 @@ Resources:
                                     - logs:CreateLogStream
                                     - logs:PutLogEvents
                                 Resource: "*"
+                            -
+                                Effect: Allow
+                                Action:
+                                    - ec2:CreateNetworkInterface
+                                    - ec2:DescribeNetworkInterfaces
+                                    - ec2:DeleteNetworkInterface
+                                Resource: "*"
 
-    MatchTable:
-        Type: AWS::DynamoDB::Table
+    VPC:
+        Type: AWS::EC2::VPC
         Properties:
-            TableName: Match
-            AttributeDefinitions:
-                -
-                    AttributeName: "Id"
-                    AttributeType: "N"
-            KeySchema:
-                -
-                    AttributeName: "Id"
-                    KeyType: "HASH"
-            ProvisionedThroughput:
-                ReadCapacityUnits: 5
-                WriteCapacityUnits: 5
+            CidrBlock: 172.16.0.0/16
+            EnableDnsSupport: true
 
-    CommentsTable:
+    Subnet1:
+        Type: AWS::EC2::Subnet
+        Properties:
+            AvailabilityZone: eu-west-2a
+            CidrBlock: 172.16.1.0/24
+            VpcId:
+                Ref: VPC
+
+    Subnet2:
+        Type: AWS::EC2::Subnet
+        Properties:
+            AvailabilityZone: eu-west-2b
+            CidrBlock: 172.16.2.0/24
+            VpcId:
+                Ref: VPC
+    
+    PublicSubnet1:
+        Type: 'AWS::EC2::Subnet'
+        Properties:
+          VpcId: !Ref VPC
+          AvailabilityZone: eu-west-2a
+          CidrBlock: 172.16.3.0/24
+          MapPublicIpOnLaunch: true
+     
+    PublicSubnet2:
+        Type: 'AWS::EC2::Subnet'
+        Properties:
+          VpcId: !Ref VPC
+          AvailabilityZone: eu-west-2b
+          CidrBlock: 172.16.4.0/24
+          MapPublicIpOnLaunch: true
+
+    BefreeInternetGateway:
+        Type: "AWS::EC2::InternetGateway"
+
+    AttachGateway:
+        Type: AWS::EC2::VPCGatewayAttachment
+        Properties:
+            VpcId:
+                Ref: VPC
+            InternetGatewayId:
+                Ref: BefreeInternetGateway
+
+    PublicRouteTable:
+        Type: AWS::EC2::RouteTable
+        Properties:
+            VpcId:
+                Ref: VPC
+    
+    PublicRoute:
+        Type: AWS::EC2::Route
+        DependsOn: AttachGateway
+        Properties:
+            RouteTableId:
+                Ref: PublicRouteTable
+            DestinationCidrBlock: 0.0.0.0/0
+            GatewayId: 
+                Ref: BefreeInternetGateway
+
+    PublicSubnet1RouteTableAssociation:
+        Type: 'AWS::EC2::SubnetRouteTableAssociation'
+        Properties:
+          SubnetId: !Ref PublicSubnet1
+          RouteTableId: !Ref PublicRouteTable
+     
+    PublicSubnet2RouteTableAssociation:
+        Type: 'AWS::EC2::SubnetRouteTableAssociation'
+        Properties:
+          SubnetId: !Ref PublicSubnet2
+          RouteTableId: !Ref PublicRouteTable
+
+    NatGateway:
+        Type: AWS::EC2::NatGateway
+        DependsOn: NatPublicIP
+        Properties:
+            AllocationId:
+                Fn::GetAtt:
+                    - NatPublicIP
+                    - AllocationId
+            SubnetId:
+                Ref: PublicSubnet1
+
+    NatPublicIP:
+        Type: "AWS::EC2::EIP"
+        DependsOn: VPC
+        Properties:
+            Domain: vpc
+
+    PrivateRouteTable:
+        Type: AWS::EC2::RouteTable
+        Properties:
+            VpcId:
+                Ref: VPC
+    
+    PrivateRoute:
+        Type: 'AWS::EC2::Route'
+        Properties:
+          RouteTableId: !Ref PrivateRouteTable
+          DestinationCidrBlock: 0.0.0.0/0
+          NatGatewayId: !Ref NatGateway
+
+    Subnet1RouteTableAssociation:
+        Type: AWS::EC2::SubnetRouteTableAssociation
+        Properties:
+            SubnetId:
+                Ref: Subnet1
+            RouteTableId:
+                Ref: PrivateRouteTable
+
+    Subnet2RouteTableAssociation:
+        Type: AWS::EC2::SubnetRouteTableAssociation
+        Properties:
+            SubnetId:
+                Ref: Subnet2
+            RouteTableId:
+                Ref: PrivateRouteTable 
+
+    SecurityGroup:
+        Type: AWS::EC2::SecurityGroup
+        Properties:
+            VpcId:
+                Ref: VPC
+            GroupDescription: Enable database access for application
+            SecurityGroupIngress:
+                - 
+                    IpProtocol: tcp
+                    FromPort: '3306'
+                    ToPort: '3306'
+                    CidrIp: 0.0.0.0/0
+
+    DBSubnetGroup:
+        Type: AWS::RDS::DBSubnetGroup
+        Properties:
+            DBSubnetGroupDescription: DBSubnetGroup
+            SubnetIds:
+                - Ref: Subnet1
+                - Ref: Subnet2
+
+    BefreeDB: 
+        Type: "AWS::RDS::DBInstance"
+        Properties: 
+            DBInstanceIdentifier: "befree"
+            DBName: "befree"
+            AllocatedStorage: "100"
+            DBInstanceClass: "db.t2.micro"
+            Iops: "1000"
+            Engine: "MySQL"
+            EngineVersion: "5.6"
+            MasterUsername: "befree"
+            MasterUserPassword: "12345678"
+            DBSubnetGroupName: 
+                Ref: DBSubnetGroup
+            VPCSecurityGroups:
+                - Ref: SecurityGroup
+        DeletionPolicy: "Snapshot"
+
+    CommentTable:
         Type: AWS::DynamoDB::Table
         Properties:
             TableName: Comment

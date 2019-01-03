@@ -8,12 +8,6 @@
 </head>
 
 <body>
-    <ul id="matchList">
-        <li v-for="match in matches">
-            {{ item.message }}
-        </li>
-    </ul>
-
     <table id="matchTable">
         <tr>
             <th>DateTime</th>
@@ -22,7 +16,7 @@
             <th>Away</th>
             <th>Score</th>
         </tr>
-        <tr v-for="match in matches" v-model="match.id">
+        <tr v-for="match in matches" v-model="match.Id">
             <td>{{match.DateTime}}</td>
             <td>{{match.League}}</td>
             <td>{{match.HomeTeam}}</td>

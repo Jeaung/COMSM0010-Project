@@ -5,7 +5,9 @@
   "dependencies": {
     "aws-sdk": "^2.378.0",
     "axios": "^0.18.0",
-    "moment": "^2.23.0"
+    "config": "^3.0.1",
+    "moment": "^2.23.0",
+    "mysql2": "^1.6.4"
   },
   "scripts": {
     "test": "mocha tests/unit/"
