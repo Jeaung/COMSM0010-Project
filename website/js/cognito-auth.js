@@ -59,7 +59,7 @@ new Vue({
             cognitoUser.authenticateUser(authenticationDetails, {
                 onSuccess: function (result) {
                     alert('Successfully Logged In');
-                    // window.location.href = 'ride.html';
+                    window.location.href = 'index.html';
                 },
                 onFailure: function (err) {
                     alert(err);

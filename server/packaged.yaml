@@ -115,7 +115,7 @@ Resources:
     Type: AWS::Cognito::UserPoolClient
   BetFunction:
     Properties:
-      CodeUri: s3://befree-bruce-jeaung-pre/fe19300f1a89ddbcad6b8c2c352dbe1c
+      CodeUri: s3://befree-bruce-jeaung-pre/e5b16bbe66467191bfd9d48b0b031ad2
       Events:
         Bet:
           Properties:
@@ -133,7 +133,7 @@ Resources:
     Type: AWS::Serverless::Function
   CommentFunction:
     Properties:
-      CodeUri: s3://befree-bruce-jeaung-pre/fe19300f1a89ddbcad6b8c2c352dbe1c
+      CodeUri: s3://befree-bruce-jeaung-pre/e5b16bbe66467191bfd9d48b0b031ad2
       Events:
         Comment:
           Properties:
@@ -164,7 +164,7 @@ Resources:
     Type: AWS::DynamoDB::Table
   CrawlerFunction:
     Properties:
-      CodeUri: s3://befree-bruce-jeaung-pre/fe19300f1a89ddbcad6b8c2c352dbe1c
+      CodeUri: s3://befree-bruce-jeaung-pre/e5b16bbe66467191bfd9d48b0b031ad2
       Handler: crawler.accountingHandler
       Role:
         Fn::GetAtt:
@@ -189,7 +189,7 @@ Resources:
     Type: AWS::RDS::DBSubnetGroup
   GetMatchesFunction:
     Properties:
-      CodeUri: s3://befree-bruce-jeaung-pre/fe19300f1a89ddbcad6b8c2c352dbe1c
+      CodeUri: s3://befree-bruce-jeaung-pre/e5b16bbe66467191bfd9d48b0b031ad2
       Events:
         GetMatches:
           Properties:
@@ -201,15 +201,23 @@ Resources:
               Ref: BefreeApi
           Type: Api
       Handler: app.getMatchesHandler
+      Role:
+        Fn::GetAtt:
+        - BackingLambdaExecutionRole
+        - Arn
       Runtime: nodejs8.10
-    Role:
-      Fn::GetAtt:
-      - BackingLambdaExecutionRole
-      - Arn
+      VpcConfig:
+        SecurityGroupIds:
+        - Fn::GetAtt:
+          - SecurityGroup
+          - GroupId
+        SubnetIds:
+        - Ref: Subnet1
+        - Ref: Subnet2
     Type: AWS::Serverless::Function
   InitFunction:
     Properties:
-      CodeUri: s3://befree-bruce-jeaung-pre/fe19300f1a89ddbcad6b8c2c352dbe1c
+      CodeUri: s3://befree-bruce-jeaung-pre/e5b16bbe66467191bfd9d48b0b031ad2
       Handler: init.initHandler
       Role:
         Fn::GetAtt:
@@ -227,7 +235,7 @@ Resources:
     Type: AWS::Serverless::Function
   LikeFunction:
     Properties:
-      CodeUri: s3://befree-bruce-jeaung-pre/fe19300f1a89ddbcad6b8c2c352dbe1c
+      CodeUri: s3://befree-bruce-jeaung-pre/e5b16bbe66467191bfd9d48b0b031ad2
       Events:
         Like:
           Properties:
@@ -245,7 +253,7 @@ Resources:
     Type: AWS::Serverless::Function
   MatchDetailFunction:
     Properties:
-      CodeUri: s3://befree-bruce-jeaung-pre/fe19300f1a89ddbcad6b8c2c352dbe1c
+      CodeUri: s3://befree-bruce-jeaung-pre/e5b16bbe66467191bfd9d48b0b031ad2
       Events:
         MatchDetail:
           Properties:
@@ -262,6 +270,14 @@ Resources:
         - BackingLambdaExecutionRole
         - Arn
       Runtime: nodejs8.10
+      VpcConfig:
+        SecurityGroupIds:
+        - Fn::GetAtt:
+          - SecurityGroup
+          - GroupId
+        SubnetIds:
+        - Ref: Subnet1
+        - Ref: Subnet2
     Type: AWS::Serverless::Function
   NatGateway:
     DependsOn: NatPublicIP

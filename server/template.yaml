@@ -111,10 +111,19 @@ Resources:
                         RestApiId: !Ref BefreeApi
                         Auth:
                             Authorizer: NONE
-        Role:
-                Fn::GetAtt:
-                    - BackingLambdaExecutionRole
-                    - Arn
+            Role:
+                    Fn::GetAtt:
+                        - BackingLambdaExecutionRole
+                        - Arn
+            VpcConfig:
+                SecurityGroupIds:
+                    -
+                        Fn::GetAtt:
+                            - SecurityGroup
+                            - GroupId
+                SubnetIds:
+                    - Ref: Subnet1
+                    - Ref: Subnet2
 
     MatchDetailFunction:
         Type: AWS::Serverless::Function
@@ -135,6 +144,15 @@ Resources:
                 Fn::GetAtt:
                     - BackingLambdaExecutionRole
                     - Arn
+            VpcConfig:
+                SecurityGroupIds:
+                    -
+                        Fn::GetAtt:
+                            - SecurityGroup
+                            - GroupId
+                SubnetIds:
+                    - Ref: Subnet1
+                    - Ref: Subnet2
     
     CrawlerFunction:
         Type: AWS::Serverless::Function
