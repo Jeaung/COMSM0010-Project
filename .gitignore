@@ -33,5 +33,4 @@ bin/
 .DS_Store
 .idea/
 
-ipcv_assignment_1/cmake-build-debug/
-cmake-build-debug/
+packaged.yaml
