@@ -5,7 +5,6 @@ window._config = {
         region: 'eu-west-2'
     },
     api: {
-        invokeUrl: '',
         getMatchesUrl: 'https://p3ties07o1.execute-api.eu-west-2.amazonaws.com/Stage/matches',
         commentUrl: 'https://p3ties07o1.execute-api.eu-west-2.amazonaws.com/prod/comment',
         matchDetailUrl: 'https://p3ties07o1.execute-api.eu-west-2.amazonaws.com/prod/match',
