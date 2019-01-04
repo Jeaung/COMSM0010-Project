@@ -14,12 +14,17 @@ Resources:
         Type: AWS::Serverless::Api
         Properties:
             StageName: prod
-            Cors: "'*'"
+            Cors:
+                AllowMethods: "'GET,POST,DELETE,PUT,OPTIONS,OPTION'"
+                AllowHeaders: "'content-type,authorization'"
+                AllowOrigin: "'*'"
+                MaxAge: "'3600'"
             Auth:
-                DefaultAuthorizer: BefreeAuthorizer
                 Authorizers:
                     BefreeAuthorizer:
                         UserPoolArn: !GetAtt BefreeUserPool.Arn
+                        Identity:
+                            Header: Authorization
 
     BefreeUserPool:
         Type: "AWS::Cognito::UserPool"
@@ -55,6 +60,8 @@ Resources:
                         Path: /comment
                         Method: post
                         RestApiId: !Ref BefreeApi
+                        Auth:
+                            Authorizer: BefreeAuthorizer
             Role:
                 Fn::GetAtt:
                     - BackingLambdaExecutionRole
@@ -73,6 +80,8 @@ Resources:
                         Path: /bet
                         Method: post
                         RestApiId: !Ref BefreeApi
+                        Auth:
+                            Authorizer: BefreeAuthorizer
             Role:
                 Fn::GetAtt:
                     - BackingLambdaExecutionRole
@@ -91,6 +100,8 @@ Resources:
                         Path: /like
                         Method: post
                         RestApiId: !Ref BefreeApi
+                        Auth:
+                            Authorizer: BefreeAuthorizer
             Role:
                 Fn::GetAtt:
                     - BackingLambdaExecutionRole
@@ -109,12 +120,10 @@ Resources:
                         Path: /matches
                         Method: get
                         RestApiId: !Ref BefreeApi
-                        Auth:
-                            Authorizer: NONE
             Role:
-                    Fn::GetAtt:
-                        - BackingLambdaExecutionRole
-                        - Arn
+                Fn::GetAtt:
+                    - BackingLambdaExecutionRole
+                    - Arn
             VpcConfig:
                 SecurityGroupIds:
                     -
@@ -138,8 +147,6 @@ Resources:
                         Path: /match
                         Method: get
                         RestApiId: !Ref BefreeApi
-                        Auth:
-                            Authorizer: NONE
             Role:
                 Fn::GetAtt:
                     - BackingLambdaExecutionRole
@@ -220,6 +227,7 @@ Resources:
                     - "Arn"
     
     BackingLambdaExecutionRole:
+        DependsOn: CommentTable
         Type: AWS::IAM::Role
         Properties:
             AssumeRolePolicyDocument:
@@ -444,10 +452,16 @@ Resources:
                 -
                     AttributeName: "MatchId"
                     AttributeType: "N"
+                - 
+                    AttributeName: "User"
+                    AttributeType: "S"
             KeySchema:
                 -
                     AttributeName: "MatchId"
                     KeyType: "HASH"
+                - 
+                    AttributeName: "User"
+                    KeyType: "RANGE"
             ProvisionedThroughput:
                 ReadCapacityUnits: 5
                 WriteCapacityUnits: 5

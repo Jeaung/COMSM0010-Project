@@ -14,6 +14,7 @@ Resources:
         Ref: VPC
     Type: AWS::EC2::VPCGatewayAttachment
   BackingLambdaExecutionRole:
+    DependsOn: CommentTable
     Properties:
       AssumeRolePolicyDocument:
         Statement:
@@ -66,12 +67,17 @@ Resources:
       Auth:
         Authorizers:
           BefreeAuthorizer:
+            Identity:
+              Header: Authorization
             UserPoolArn:
               Fn::GetAtt:
               - BefreeUserPool
               - Arn
-        DefaultAuthorizer: BefreeAuthorizer
-      Cors: '''*'''
+      Cors:
+        AllowHeaders: '''content-type,authorization'''
+        AllowMethods: '''GET,POST,DELETE,PUT,OPTIONS,OPTION'''
+        AllowOrigin: '''*'''
+        MaxAge: '''3600'''
       StageName: prod
     Type: AWS::Serverless::Api
   BefreeDB:
@@ -115,10 +121,12 @@ Resources:
     Type: AWS::Cognito::UserPoolClient
   BetFunction:
     Properties:
-      CodeUri: s3://befree-bruce-jeaung-pre/e5b16bbe66467191bfd9d48b0b031ad2
+      CodeUri: s3://befree-bruce-jeaung-pre/946a5eaeffb26a96b3932922b1e48f59
       Events:
         Bet:
           Properties:
+            Auth:
+              Authorizer: BefreeAuthorizer
             Method: post
             Path: /bet
             RestApiId:
@@ -133,10 +141,12 @@ Resources:
     Type: AWS::Serverless::Function
   CommentFunction:
     Properties:
-      CodeUri: s3://befree-bruce-jeaung-pre/e5b16bbe66467191bfd9d48b0b031ad2
+      CodeUri: s3://befree-bruce-jeaung-pre/946a5eaeffb26a96b3932922b1e48f59
       Events:
         Comment:
           Properties:
+            Auth:
+              Authorizer: BefreeAuthorizer
             Method: post
             Path: /comment
             RestApiId:
@@ -154,9 +164,13 @@ Resources:
       AttributeDefinitions:
       - AttributeName: MatchId
         AttributeType: N
+      - AttributeName: User
+        AttributeType: S
       KeySchema:
       - AttributeName: MatchId
         KeyType: HASH
+      - AttributeName: User
+        KeyType: RANGE
       ProvisionedThroughput:
         ReadCapacityUnits: 5
         WriteCapacityUnits: 5
@@ -164,7 +178,7 @@ Resources:
     Type: AWS::DynamoDB::Table
   CrawlerFunction:
     Properties:
-      CodeUri: s3://befree-bruce-jeaung-pre/e5b16bbe66467191bfd9d48b0b031ad2
+      CodeUri: s3://befree-bruce-jeaung-pre/946a5eaeffb26a96b3932922b1e48f59
       Handler: crawler.accountingHandler
       Role:
         Fn::GetAtt:
@@ -189,12 +203,10 @@ Resources:
     Type: AWS::RDS::DBSubnetGroup
   GetMatchesFunction:
     Properties:
-      CodeUri: s3://befree-bruce-jeaung-pre/e5b16bbe66467191bfd9d48b0b031ad2
+      CodeUri: s3://befree-bruce-jeaung-pre/946a5eaeffb26a96b3932922b1e48f59
       Events:
         GetMatches:
           Properties:
-            Auth:
-              Authorizer: NONE
             Method: get
             Path: /matches
             RestApiId:
@@ -217,7 +229,7 @@ Resources:
     Type: AWS::Serverless::Function
   InitFunction:
     Properties:
-      CodeUri: s3://befree-bruce-jeaung-pre/e5b16bbe66467191bfd9d48b0b031ad2
+      CodeUri: s3://befree-bruce-jeaung-pre/946a5eaeffb26a96b3932922b1e48f59
       Handler: init.initHandler
       Role:
         Fn::GetAtt:
@@ -235,10 +247,12 @@ Resources:
     Type: AWS::Serverless::Function
   LikeFunction:
     Properties:
-      CodeUri: s3://befree-bruce-jeaung-pre/e5b16bbe66467191bfd9d48b0b031ad2
+      CodeUri: s3://befree-bruce-jeaung-pre/946a5eaeffb26a96b3932922b1e48f59
       Events:
         Like:
           Properties:
+            Auth:
+              Authorizer: BefreeAuthorizer
             Method: post
             Path: /like
             RestApiId:
@@ -253,12 +267,10 @@ Resources:
     Type: AWS::Serverless::Function
   MatchDetailFunction:
     Properties:
-      CodeUri: s3://befree-bruce-jeaung-pre/e5b16bbe66467191bfd9d48b0b031ad2
+      CodeUri: s3://befree-bruce-jeaung-pre/946a5eaeffb26a96b3932922b1e48f59
       Events:
         MatchDetail:
           Properties:
-            Auth:
-              Authorizer: NONE
             Method: get
             Path: /match
             RestApiId:

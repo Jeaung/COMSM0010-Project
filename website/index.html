@@ -18,12 +18,12 @@
             <th>Score</th>
             <th>Operation</th>
         </tr>
-        <tr v-for="match in matches" :id="match.id">
+        <tr v-for="match in matches">
             <td>{{match.date_time}}</td>
             <td>{{match.home_team}}</td>
             <td>{{match.away_team}}</td>
             <td>{{match.home_score}}:{{match.away_score}}</td>
-            <td><button>Detail</button></td>
+            <td><button @click="matchDetail(match.id)">Detail</button></td>
         </tr>
     </table>
 

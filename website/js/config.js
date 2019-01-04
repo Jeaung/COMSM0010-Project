@@ -7,6 +7,9 @@ window._config = {
     api: {
         invokeUrl: '',
         getMatchesUrl: 'https://p3ties07o1.execute-api.eu-west-2.amazonaws.com/Stage/matches',
-        commentUrl: 'https://p3ties07o1.execute-api.eu-west-2.amazonaws.com/prod/comment'
+        commentUrl: 'https://p3ties07o1.execute-api.eu-west-2.amazonaws.com/prod/comment',
+        matchDetailUrl: 'https://p3ties07o1.execute-api.eu-west-2.amazonaws.com/prod/match',
+        likeUrl: 'https://p3ties07o1.execute-api.eu-west-2.amazonaws.com/Stage/like',
+        betUrl: 'https://p3ties07o1.execute-api.eu-west-2.amazonaws.com/Stage/bet'
     }
 };

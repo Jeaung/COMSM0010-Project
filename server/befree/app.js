@@ -53,18 +53,46 @@ exports.commentHandler = async (event, context, callback) => {
     }
 }
 
-exports.betHandler = (event, context, callback) => {
-    callback(null, {
-        statusCode: 200,
-        body: "hello world"
-    });
+exports.betHandler = async (event, context, callback) => {
+
 }
 
-exports.likeHandler = (event, context, callback) => {
-    callback(null, {
-        statusCode: 200,
-        body: "hello world"
-    });
+exports.likeHandler = async (event, context, callback) => {
+    var body = JSON.parse(event.body);
+
+    console.log('like comment req body', body, 'headers', event.headers['Origin']);
+
+    try {
+        var params = {
+            TableName: 'Comment',
+            Key: {
+                "MatchId": body.matchId,
+                "User": body.user
+            },
+            UpdateExpression: "set Likes = Likes + :val",
+            ExpressionAttributeValues: {
+                ":val": 1
+            },
+            ReturnValues: "UPDATED_NEW"
+        };
+
+        var result = await ddb.update(params).promise();
+
+        console.log('like comment result', result);
+
+        return {
+            headers: {
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Request-Method': 'POST, GET, OPTIONS, DELETE, OPTION, PUT',
+                'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+                'Access-Control-Allow-Credentials': 'true',
+            },
+            statusCode: 200,
+            body: '{"code":0}'
+        };
+    } catch (e) {
+        console.log('like comment failed', e)
+    }
 }
 
 exports.matchDetailHandler = async (event, context, callback) => {

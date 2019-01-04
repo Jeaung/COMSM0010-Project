@@ -14,8 +14,15 @@ new Vue({
             .catch(e => {
                 console.log(e);
             })
+    },
+    methods: {
+        matchDetail: function (matchId) {
+            console.log('click', matchId);
+            // this.$router.push({path:'/match.html'});
+            window.location.href = 'match.html?id=' + matchId;
+        }
     }
-})
+});
 
 var poolData = {
     UserPoolId: _config.cognito.userPoolId,
@@ -38,7 +45,4 @@ if (cognitoUser) {
             console.log('auth token', authToken);
         }
     });
-} else {
-    console.log('not signed in');
-    window.location.href = 'signin.html';
 }
