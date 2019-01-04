@@ -43,7 +43,10 @@ exports.commentHandler = async (event, context, callback) => {
 
         return {
             headers: {
-                'Access-Control-Allow-Origin': '*'
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Request-Method': 'POST, GET, OPTIONS, DELETE, OPTION, PUT',
+                'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+                'Access-Control-Allow-Credentials': 'true',
             },
             statusCode: 200,
             body: '{"code":0}'

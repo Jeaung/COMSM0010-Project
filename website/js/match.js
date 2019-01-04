@@ -4,6 +4,7 @@ new Vue({
         return {
             comments: [],
             match: null,
+            content: ""
         }
     },
     created: function () {
@@ -36,6 +37,31 @@ new Vue({
             }).then(response => {
                 console.log(response.data);
                 comment.Likes += 1;
+            }).catch(e => {
+                console.log(e);
+            });
+        },
+        postComment: function (matchId, content) {
+            console.log(content);
+            axios({
+                url: _config.api.commentUrl,
+                data: {
+                    matchId: matchId,
+                    content: content
+                },
+                headers: {
+                    'Authorization': authToken
+                },
+                method: 'post'
+            }).then(response => {
+                console.log(response.data);
+                this.comments.unshift({
+                    "MatchId": matchId,
+                    'User': cognitoUser.username,
+                    "Content": content,
+                    'Likes': 0,
+                    'Created': Math.floor(Date.now() / 1000)
+                });
             }).catch(e => {
                 console.log(e);
             });

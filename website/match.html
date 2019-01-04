@@ -14,6 +14,11 @@
         <span>Away: {{match.away_team}}</span><br>
         <span>Score: {{match.home_score}}:{{match.away_score}}</span><br>
         <br>
+        <h3>Write Comment</h3>
+        <textarea v-model="content">
+
+        </textarea>
+        <button @click="postComment(match.id, content)">Post</button>
         <h3>Comments</h3>
         <ul v-for="comment in comments">
             <li>{{comment.User}}: {{comment.Content}}Time: {{comment.Created}}

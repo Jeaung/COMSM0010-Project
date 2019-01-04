@@ -24,6 +24,17 @@ new Vue({
     }
 });
 
+new Vue({
+    el: '#signout',
+    methods: {
+        signout: function () {
+            console.log('signout');
+            cognitoUser.signOut();
+            alert('signed out');
+        }
+    }
+});
+
 var poolData = {
     UserPoolId: _config.cognito.userPoolId,
     ClientId: _config.cognito.userPoolClientId
