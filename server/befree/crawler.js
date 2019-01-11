@@ -11,7 +11,7 @@ exports.accountingHandler = async (event, context, callback) => {
 
     try {
         const response = await axios({
-            url: 'https://api.football-data.org/v2/matches?fromDate=' + yesterday.format('YYYY-MM-DD') + '&toDate=' + today.format('YYYY-MM-DD'),
+            url: 'https://api.football-data.org/v2/matches?dateFrom=' + yesterday.format('YYYY-MM-DD') + '&dateTo=' + today.format('YYYY-MM-DD'),
             method: 'GET',
             headers: {
                 'X-Auth-Token': 'd7d20ea7ef31413a944837da45a8ef5c'
