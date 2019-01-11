@@ -443,6 +443,22 @@ Resources:
             VPCSecurityGroups:
                 - Ref: SecurityGroup
         DeletionPolicy: "Snapshot"
+    
+    BefreeDatabaseCluster:
+        Type: AWS::RDS::DBCluster
+        Properties:
+            Engine: aurora
+            EngineMode: serverless
+            MasterUsername: "befree"
+            MasterUserPassword: "12345678"
+            DBSubnetGroupName: !Ref "DBSubnetGroup"
+            DeletionProtection: 'false'
+            VpcSecurityGroupIds:
+                -
+                    Fn::GetAtt:
+                        - SecurityGroup
+                        - GroupId
+
 
     CommentTable:
         Type: AWS::DynamoDB::Table
