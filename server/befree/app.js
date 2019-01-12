@@ -25,6 +25,7 @@ exports.commentHandler = async (event, context, callback) => {
 
     console.log('req body', event.body, 'user', username);
 
+    var created = moment().unix();
     try {
         var params = {
             TableName: 'Comment',
@@ -33,7 +34,7 @@ exports.commentHandler = async (event, context, callback) => {
                 'User': username,
                 "Content": body.content,
                 'Likes': 0,
-                'Created': moment().unix()
+                'Created': created
             }
         };
 
@@ -49,10 +50,25 @@ exports.commentHandler = async (event, context, callback) => {
                 'Access-Control-Allow-Credentials': 'true',
             },
             statusCode: 200,
-            body: '{"code":0}'
+            body: JSON.stringify({
+                code: 0,
+                timestamp: created
+            })
         };
     } catch (e) {
         console.log('write comment failed', e)
+        return {
+            headers: {
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Request-Method': 'POST, GET, OPTIONS, DELETE, OPTION, PUT',
+                'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+                'Access-Control-Allow-Credentials': 'true',
+            },
+            statusCode: 500,
+            body: JSON.stringify({
+                err: e.message
+            })
+        };
     }
 }
 
@@ -160,5 +176,14 @@ exports.getMatchesHandler = async (event, context, callback) => {
         };
     } catch (e) {
         console.log('get matches failed', e);
+        return {
+            headers: {
+                'Access-Control-Allow-Origin': '*'
+            },
+            statusCode: 500,
+            body: JSON.stringify({
+                err: e.message
+            })
+        };
     }
 }
