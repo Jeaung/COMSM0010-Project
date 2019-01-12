@@ -12,7 +12,7 @@ exports.initHandler = async (event, context, callback) => {
             password: config.get('db_config.password')
         });
 
-        var dbRes = await connection.query('create database ' + config.get('db_config.database') + ' if not exists');
+        var dbRes = await connection.query('create database if not exists ' + config.get('db_config.database'));
 
         console.log('create database result', dbRes);
 
