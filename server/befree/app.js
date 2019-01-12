@@ -52,12 +52,140 @@ exports.commentHandler = async (event, context, callback) => {
             body: '{"code":0}'
         };
     } catch (e) {
-        console.log('write comment failed', e)
+        console.log('write comment failed', e);
     }
 }
 
 exports.betHandler = async (event, context, callback) => {
+    const username = event.requestContext.authorizer.claims['cognito:username'];
+    var body = JSON.parse(event.body);
 
+    var match_id = body.matchId;
+    var userBetPoints = body.betPoints;
+    var score_predicted = body.scorePredicted;
+
+    console.log('req body', event.body, 'user', username);
+
+    var dateTime_bet = moment().unix();
+    console.log('got time and date of bet ', dateTime_bet);
+    var return_value;
+
+    try {
+        var dateTime_match;
+        const [rows, fields] = await promisePool.query('SELECT * FROM matches WHERE id = ?', [match_id]);
+
+        if (rows.length > 0) {
+            rows.forEach(element => {
+                dateTime_match = element.date_time;
+            });
+            console.log('got time and date of match ', dateTime_match);
+            var diffInSecs;
+
+            // if (dateTime_match < dateTime_bet){
+            if (dateTime_match > dateTime_bet){
+                diffInSecs = dateTime_bet - dateTime_match;
+                console.log('the user tried to bet after the match started. The difference in seconds is ', diffInSecs);
+                return_value = "The match has already started. You can't bet anymore."
+
+            } else {
+                diffInSecs = dateTime_match - dateTime_bet;
+                console.log('the bet was made before the match. The difference in seconds is ', diffInSecs);
+
+                var userCrtPoints;
+                const [rows2, fields2] = await promisePool.query('SELECT * from rankings where username = ?', [username]);
+                
+                if (rows2.length > 0) {
+                    rows2.forEach(element => {
+                        userCrtPoints = element.bet_points;
+                    });
+                    console.log('got the number of points of the user ', userCrtPoints);
+                    var diffInPoints = userCrtPoints - userBetPoints;
+
+                    if (diffInPoints >= 0){
+                        // add bet
+                        var resultInsert = await promisePool.query("INSERT INTO bets (username, match_id, bet_value, score_predicted, date_time) VALUES (?, ?, ?, ?, ?)", [username, match_id, userBetPoints, score_predicted, dateTime_bet]);
+                        console.log('inserted into table the bet', resultInsert);
+
+                        // update points
+                        var resultReplace = await promisePool.query("UPDATE rankings SET bet_points = ? WHERE username = ?", [diffInPoints, username]);
+                        console.log('updated the bet points of the user', resultReplace);
+
+                        return_value = "Your bet was registered. In the case your bet is correct, you will receive your points in less than 24 hours.";
+                    } else {
+                        console.log('the user has presently less points than he wants to bet');
+                        return_value = "You cannot bet more points than you have.";
+                    }
+
+                } else {
+                    console.log('couldnt find the user number of points')
+                    return_value = "An error occured about your account."
+                }
+            }
+        } else {
+            console.log('couldnt find match to bet on')
+            return_value = "An error occured about this match"
+        }
+        return {
+            headers: {
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Request-Method': 'POST, GET, OPTIONS, DELETE, OPTION, PUT',
+                'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+                'Access-Control-Allow-Credentials': 'true',
+            },
+            statusCode: 200,
+            body: JSON.stringify({
+                return_value: return_value
+            })
+        };
+    } catch (e) {
+        console.log('add bet details failed', e);
+    }
+}
+
+exports.getUserBettingPoints = async (event, context, callback) => {
+    var username = event["queryStringParameters"]['username'];
+    console.log('user', username);
+    var betPoints;
+
+    try {
+        const [rows, fields] = await promisePool.query("SELECT * from rankings where username = ?", [username]);
+
+        if (rows.length > 0) {
+            rows.forEach(element => {
+                betPoints = element.bet_points;
+            });
+            console.log('got betting points', betPoints);
+
+        } else {
+            console.log('username is not present in table. Lets initialize his number of points');
+            var initBettingPoints = 20;
+            var result = await promisePool.query("INSERT INTO rankings (username, bet_points) VALUES (?, ?)", [username, initBettingPoints]);
+            console.log('inserted into table result', result);
+
+            const [rows2, fields2] = await promisePool.query("SELECT * from rankings where username = ?", [username]);
+
+            rows2.forEach(element => {
+                betPoints = element.bet_points;
+                });
+
+            console.log('inserted and got betting points', betPoints);
+        }
+
+        return {
+            headers: {
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Request-Method': 'POST, GET, OPTIONS, DELETE, OPTION, PUT',
+                'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+                'Access-Control-Allow-Credentials': 'true',
+            },
+            statusCode: 200,
+            body: JSON.stringify({
+                betPoints: betPoints
+            })
+        };
+    } catch (e) {
+        console.log('get betting details failed', e);
+    }
 }
 
 exports.likeHandler = async (event, context, callback) => {
