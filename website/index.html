@@ -4,61 +4,147 @@
 <head>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO"
         crossorigin="anonymous">
-    <h2>Welcome to Befree</h2>
-    <a href="signin.html">Sign in</a><br>
-    <a href="register.html">Sign up</a>
-    <div id="signout"><button @click="signout">Sign out</button></div>
+    <link rel="stylesheet" href="css/app.css">    
 </head>
 
 <body>
-    <div id="app"> 
-        <h3>Matches</h3>
-        <table id="matchTable">
-            <tr>
-                <th>DateTime</th>
-                <th>Home</th>
-                <th>Away</th>
-                <th>Score</th>
-                <th>Operation</th>
-            </tr>
-            <tr v-for="match in matches">
-                <td>{{match.date_time}}</td>
-                <td>{{match.home_team}}</td>
-                <td>{{match.away_team}}</td>
-                <td>{{match.home_score}}:{{match.away_score}}</td>
-                <td><button @click="matchDetail(match.id)">Details & Bet</button></td>
-            </tr>
-        </table>
+        
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+        <span class="navbar-brand mb-0 h1">Befree</span>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav mr-auto">
+                <li class="nav-item">
+                    <a class="nav-link active" id="homeLink" href="#" onclick="showDiv('home')">Home</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="rankingsLink" href="#" onclick="showDiv('rankings')">Rankings</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="aboutLink" href="#" onclick="showDiv('about')">About</a>
+                </li>
+            </ul>
+            <form class="form-inline ml-auto">
+                <div id="signinbutton">
+                    <a href="signin.html" class="btn btn-outline-success">Sign in</a>
+                    <a href="register.html" class="btn btn-outline-primary">Sign up</a>
+                </div>
+                <div id="signout"><button @click="signout" class="btn btn btn-outline-danger">Sign out</button></div>
+            </form>
+        </div>
+    </nav>
 
-        <h3>My position in the rankings</h3>
-        <div id=userRankingDiv>
-            <table id="userRankingTable">
-                <tr>
-                    <th>Position</th>
-                    <th>Username</th>
-                    <th>Points</th>
-                </tr>
-                <tr v-for="user_row in user_ranking">
-                    <td>{{user_row.rank}}</td>
-                    <td>{{user_row.username}}</td>
-                    <td>{{user_row.bet_points}}</td>
-                </tr>
-            </table>
-        </div>    
+    <div id="loader">
+        <div class="holder">
+            <div class="preloader"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
+        </div>
+    </div>
 
-        <h3>Rankings</h3>
-        <table id="rankingsTable">
-            <tr>
-                <th>Position</th>
-                <th>Username</th>
-                <th>Points</th>
-            </tr>
-            <tr v-for="position in rankings">
-                <td>{{position.rank}}</td>
-                <td>{{position.username}}</td>
-                <td>{{position.bet_points}}</td>
-            </tr>
-        </table>
+    <div id="content">
+        <div id="home">
+            <div class="row">
+                <div class="col">
+                    <h3 style="text-align: center;">Upcoming matches</h3>
+                    <div class="table_outer">
+                        <table id="matchTable" class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Date & Time</th>
+                                    <th scope="col">Home</th>
+                                    <th scope="col">Away</th>
+                                    <th scope="col">Score</th>
+                                    <th scope="col">Operation</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr scope="row" v-for="upcoming_match in upcoming_matches">
+                                    <td>{{upcoming_match.date_time}}</td>
+                                    <td>{{upcoming_match.home_team}}</td>
+                                    <td>{{upcoming_match.away_team}}</td>
+                                    <td>{{upcoming_match.home_score}}:{{upcoming_match.away_score}}</td>
+                                    <td><a href="#" @click="matchDetail(upcoming_match.id)">Bet & Details</a></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="col">
+                    <h3 style="text-align: center;">Finished matches</h3>
+                    <div class="table_outer">
+                        <table id="matchTablePassed" class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Date & Time</th>
+                                    <th scope="col">Home</th>
+                                    <th scope="col">Away</th>
+                                    <th scope="col">Score</th>
+                                    <th scope="col">Operation</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr scope="row" v-for="passed_match in passed_matches">
+                                    <td>{{passed_match.date_time}}</td>
+                                    <td>{{passed_match.home_team}}</td>
+                                    <td>{{passed_match.away_team}}</td>
+                                    <td>{{passed_match.home_score}}:{{passed_match.away_score}}</td>
+                                    <td><a href="#" @click="matchDetail(passed_match.id)">Details</a></td>
+                                </tr>
+                            </tbody>
+                        </table> 
+                    </div>
+                </div>
+            </div>          
+        </div>
+
+        <div id="rankings">
+            <div id="rankingsConnected">
+                <h2 style="text-align: center;">Rankings</h2>
+                <hr/>
+                <h3 style="text-align: center;">My position</h3>
+                <div id=userRankingDiv>
+                    <table id="userRankingTable" class="table table-striped">
+                        <tr>
+                            <th scope="col">Position</th>
+                            <th scope="col">Username</th>
+                            <th scope="col">Points</th>
+                        </tr>
+                        <tr scope="row" v-for="user_row in user_ranking">
+                            <td>{{user_row.rank}}</td>
+                            <td>{{user_row.username}}</td>
+                            <td>{{user_row.bet_points}}</td>
+                        </tr>
+                    </table>
+                </div>
+
+                <h3 style="text-align: center;">Top 20 users</h3>
+                <table id="rankingsTable" class="table table-striped">
+                    <tr>
+                        <th scope="col">Position</th>
+                        <th scope="col">Username</th>
+                        <th scope="col">Points</th>
+                    </tr>
+                    <tr scope="row" v-for="position in rankings">
+                        <td>{{position.rank}}</td>
+                        <td>{{position.username}}</td>
+                        <td>{{position.bet_points}}</td>
+                    </tr>
+                </table>
+            </div>
+            <div id="rankingsNotConnected">You need to sign in to be able to see the rankings</div>
+        </div>
+
+        <div id="about">
+            <div class="jumbotron">
+                <h1 class="display-4">Hello, dear user!</h1>
+                <p class="lead">BeFree is an online community for football fans where people bet on football matches, compete with other users to earn points and write comments of football matches to communicate with each other.</p>
+                <hr class="my-4">
+                <p>Designed by Bruce Jeaung & Kevin Jolly.</p>
+                <a class="btn btn-primary btn-lg" href="https://github.com/Jeaung/COMSM0010-Project" role="button">Github repository</a>
+            </div>            
+        </div>        
     </div>
 
     <script src="js/vendor/aws-cognito-sdk.min.js"></script>
