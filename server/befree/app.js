@@ -204,6 +204,54 @@ exports.getUserBettingPoints = async (event, context, callback) => {
     }
 }
 
+exports.getRankings = async (event, context, callback) => {
+    var username = event["queryStringParameters"]['username'];
+    console.log('user', username);
+    var userRanking = {result:"", rank:0, username:"", bet_points:0};
+    var k;
+
+    try {
+        var [rows, fields] = await promisePool.query("SELECT @rn:=@rn+1 AS rank, username, bet_points FROM (SELECT username, bet_points FROM rankings ORDER BY bet_points DESC LIMIT 20)z, (SELECT @rn:=0)y");
+
+        if (rows.length > 0) {
+            console.log('got rankings points', rows);
+
+            var [rows2, fields2] = await promisePool.query("SELECT rank, username, bet_points FROM (SELECT @rn:=@rn+1 AS rank, username, bet_points FROM (SELECT username, bet_points FROM rankings ORDER BY bet_points DESC)z, (SELECT @rn:=0)y) AS T WHERE username = ?", [username]); 
+
+            if (rows2.length > 0) {
+                rows2.forEach(element => {
+                    userRanking.rank = element.rank;
+                    userRanking.username = element.username;
+                    userRanking.bet_points = element.bet_points;              
+                });
+                console.log('got rankings points of user', userRanking);
+            } else {
+                userRanking.result = "You are not ranked yet.";
+                console.log('could not find user in the database');
+            }
+        } else {
+            userRanking = null;
+            console.log('the rankings selection sent an empty result');
+        }
+
+        return {
+            headers: {
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Request-Method': 'POST, GET, OPTIONS, DELETE, OPTION, PUT',
+                'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+                'Access-Control-Allow-Credentials': 'true',
+            },
+            statusCode: 200,
+            body: JSON.stringify({
+                rankings: rows,
+                userRanking: userRanking
+            })
+        };
+    } catch (e) {
+        console.log('get rankings failed', e);
+    }
+}
+
 exports.likeHandler = async (event, context, callback) => {
     var body = JSON.parse(event.body);
 
@@ -291,7 +339,7 @@ exports.matchDetailHandler = async (event, context, callback) => {
 exports.getMatchesHandler = async (event, context, callback) => {
     try {
         // TODO date_time constraint on SQL
-        const [rows, fields] = await promisePool.query("SELECT * from matches");
+        const [rows, fields] = await promisePool.query("SELECT * FROM matches ORDER BY date_time ASC");
 
         console.log('get', rows.length, 'matches');
 
