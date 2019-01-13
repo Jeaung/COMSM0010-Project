@@ -100,15 +100,37 @@ For databases, we use both Amazon DynamoDB \cite{b9} and Amazon Aurora \cite{b10
 The reason for including DynamoDB instead of only using Aurora is that, for key-value data, DynamoDB outperforms Aurora with peaks of more than 20 million requests per second \cite{b9} while Aurora, as RDS, can only reach a maximum of about 200000 IOPS \cite{b12} \cite{b13}. Furthermore, in terms of pricing, in early stages, DynamoDB is basically free \cite{b14}. On the other hand, Aurora is charged by the hour as long as it's active \cite{b15}.
 
 \section{Scalability}
-Scalability remains a vital part in designing a web application and it means removing or mitigating system bottlenecks. Intuitively, bottlenecks of a system fall into two groups i.e. internal and external. Internal bottlenecks lie in both hardware (CPU, memory, network etc.) and software not being able to fully utilising the hardware resources. Because the number of AWS Lambda functions increases as system traffic grows, more hardware resource and software instances are created in isolation \cite{b14}. Thus, in BeFree, internal bottlenecks could be eliminated by Lambda's auto scaling.
+Scalability remains a vital part in designing a web application and it aims to remove or mitigate system bottlenecks. Intuitively, bottlenecks of a system fall into two groups i.e. internal and external. Internal bottlenecks lie in both hardware (CPU, memory, network etc.) and software not being able to fully utilising the hardware resources. Because the number of AWS Lambda functions increases as system traffic grows, more hardware resource and software instances are allocated in isolation \cite{b14}. Thus, in BeFree, internal bottlenecks could be eliminated by Lambda's auto scaling.
 
-On the other hand, external bottlenecks are the ones of the system's depending services. The directly depending services of BeFree are S3, Aurora, DynamoDB, API Gateway and Cognito. S3 hosts static web resources which users directly interact with. As claimed by AWS, s3 scales storage resources up and down to meet fluctuating demands so it's not a bottleneck of our system. Aurora, with its serverless configuration, can also seamlessly scale compute and memory capacity as needed, with no disruption to client connections. Again, this is not a bottleneck for scaling. Similar to Aurora Serverless, DynamoDB is said to be able to automatically scales tables up and down to adjust for capacity and maintain performance. According to its website, API Gateway creates, maintains, and secures APIs at any scale. Finally, Amazon Cognito User Pools provide a secure user directory that scales to hundreds of millions of users.
+On the other hand, external bottlenecks are the ones of the system's depending services. The directly depending services of BeFree are S3, Aurora, DynamoDB, API Gateway and Cognito. S3 hosts static web resources which users directly interact with. As claimed by AWS, S3 scales storage resources up and down to meet fluctuating demands so it's not a bottleneck of our system. Aurora, with its serverless configuration, can also seamlessly scale compute and memory capacity as needed, with no disruption to client connections. Again, this is not a bottleneck for scaling. Similar to Aurora Serverless, DynamoDB is said to be able to automatically scales tables up and down to adjust for capacity and maintain performance. According to its website, API Gateway creates, maintains, and secures APIs at any scale. Finally, Amazon Cognito User Pools provide a secure user directory that scales to hundreds of millions of users.
 
-Overall, each component both internal or external of BeFree is fully managed by AWS and is able to auto-scale to some extent. So theoretically, BeFree has the capability to auto-scale infinitely as long as all of AWS's services are infinitely scalable.
+Overall, each component of BeFree is fully managed by AWS and is able to auto-scale to some extent. So theoretically, BeFree has the capability to auto-scale infinitely as long as all of AWS's services are infinitely scalable.
 
-We did some load testing against some of our representative APIs and below table shows the result.
+We did some load test against two of our representative APIs. The load test tool we use is RedLine13 \cite{b19} and it uses EC2 instances on AWS to issue load test requests. Due to the limit of our budget we haven't gone far in terms of Requests Per Second and the load tests don't last very long accordingly. But the result still demonstrate the scalability of our system, in specific, auto scale capability since we did not interfere the system with its settings or configurations during load test period.
 
-TODO load testing
+The first API is the get matches API which is called each time users visit the home page of BeFree. This API is backed by Aurora Serverless. The result shows that response time remains stable and low as load continuously increases. And according to the RDS console the number of Aurora capacity units increases with load.
+
+\begin{figure}[htbp]
+ \centerline{\includegraphics[scale=0.26]{matches-qps.png}}
+\caption{Get Matches API QPS}
+\end{figure}
+
+\begin{figure}[htbp]
+\centerline{\includegraphics[scale=0.26]{matches-response-time.png}}
+\caption{Get Matches API Response Time}
+\end{figure}
+
+The second API we test is comment API which is a writing (POST) API. It's called when users post comments on football matches. The underpinning services are Cognito and DynamoDB. Cognito verifies the Authorisation header of the request because only signed-in users are allowed to write comments and the comment data is put into DynamoDB table. In the production environment, DynamoDB can be configured to be auto-scalable but because of budget constraint we explicitly specify the write capacity units to 1000. Similar to get matches API, the performance of comment API is impressive. One thing to note is that, in case some requests times out occasionally (e.g. network instability) the behaviour of RedLine13 becomes unpredictable as it stops increasing load and the data on the graph becomes totally wrong. As a consequence, the figure only displays a maximum QPS of about 900.
+
+\begin{figure}[htbp]
+\centerline{\includegraphics[scale=0.26]{comment-qps.png}}
+\caption{Comment API QPS}
+\end{figure}
+
+\begin{figure}[htbp]
+\centerline{\includegraphics[scale=0.26]{comment-response-time.png}}
+\caption{Comment Response Time}
+\end{figure}
 
 
 \section{Design and Implementation}
@@ -144,8 +166,8 @@ Thirdly, our home page serves to fetch and display match data from Aurora. Altho
 \bibitem{b16} “Understanding Container Reuse in AWS Lambda“ https://aws.amazon.com/blogs/compute/container-reuse-in-lambda/. Accessed: 2019-01-07.
 \bibitem{b17} Bartosz Góralewicz, “Going Beyond Google: Are Search Engines Ready for JavaScript Crawling \& Indexing?“ https://moz.com/blog/search-engines-ready-for-javascript-crawling. Accessed: 2019-01-07.
 \bibitem{b18} “Amazon ElasticCache“ https://aws.amazon.com/elasticache/. Accessed: 2019-01-07.
+\bibitem{b19} “RedLine13“ https://www.redline13.com/. Accessed: 2019-01-07.
 \end{thebibliography}
 \vspace{12pt}
 
 \end{document}
-
