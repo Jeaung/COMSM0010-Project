@@ -4,17 +4,37 @@
 <head>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO"
         crossorigin="anonymous">
+    <title>Befree - Sign In</title> 
 </head>
 
 <body>
     <section>
-        <h1>Sign In</h1>
-        <form id="signinForm" @submit.prevent="submit">
+        <h1 style="text-align: center; margin-top:20px;">Sign In</h1>
+        <hr/>
+<!--         <form id="signinForm" @submit.prevent="submit">
             <input type="email" id="emailInputSignin" placeholder="Email" v-model="user.email" required>
             <input type="password" id="passwordInputSignin" placeholder="Password" v-model="user.password" pattern=".*"
                 required>
             <input type="submit" value="Sign in">
-        </form>
+        </form> -->
+
+        <div class="row">
+            <div class="offset-3 col-6">
+                <form id="signinForm" @submit.prevent="submit">
+                    <div class="form-group">
+                        <label for="emailInputSignin">Email address</label>
+                        <input type="email" class="form-control" id="emailInputSignin" v-model="user.email" aria-describedby="emailHelp" placeholder="example@email.com" required>
+                        <small id="emailHelp" class="form-text text-muted">Your email address is your username.</small>
+                    </div>
+                        <div class="form-group">
+                        <label for="passwordInputSignin">Password</label>
+                        <input type="password" class="form-control" id="passwordInputSignin" placeholder="Password" v-model="user.password" pattern=".*"
+                        required>
+                    </div>
+                    <button type="submit" class="btn btn-success" value="Sign In">Sign In</button>
+                </form>
+            </div>
+        </div>    
     </section>
 
     <script src="js/vendor/aws-cognito-sdk.min.js"></script>

@@ -149,7 +149,7 @@ new Vue({
         signout: function () {
             console.log('signout');
             cognitoUser.signOut();
-            alert('signed out');
+            alert('Signed out');
         }
     }
 });

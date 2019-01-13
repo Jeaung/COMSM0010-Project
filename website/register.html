@@ -10,13 +10,12 @@
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO"
         crossorigin="anonymous">
 
-    <title>Hello, world!</title>
+    <title>Befree - Registration</title>
 </head>
 
 <body>
     <section>
-        <h1>Register</h1>
-        <form id="registrationForm" @submit.prevent="submit">
+<!--         <form id="registrationForm" @submit.prevent="submit">
             <input type="email" id="emailInputRegister" placeholder="Email" pattern=".*" v-model="user.email" required>
             <input type="password" id="passwordInputRegister" placeholder="Password" pattern=".*" v-model="user.password"
                 required>
@@ -24,7 +23,32 @@
                 required>
 
             <input type="submit" value="Sign Up">
-        </form>
+        </form> -->
+
+        <h1 style="text-align: center; margin-top:20px;">Register</h1>
+        <hr/>
+
+        <div class="row">
+            <div class="offset-3 col-6">
+                <form id="registrationForm" @submit.prevent="submit">
+                    <div class="form-group">
+                        <label for="emailInputRegister">Email address</label>
+                        <input type="email" class="form-control" id="emailInputRegister" pattern=".*" v-model="user.email" aria-describedby="emailHelp" placeholder="example@email.com" required>
+                        <small id="emailHelp" class="form-text text-muted">Your email address will be your username.</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="passwordInputSignin">Password</label>
+                        <input type="password" class="form-control" id="passwordInputRegister" placeholder="Password" pattern=".*" v-model="user.password" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="passwordInputSignin">Confirm Password</label>
+                        <input type="password" class="form-control" id="password2InputRegister" placeholder="Confirm Password" pattern=".*" v-model="user.condirmPassword"
+                        required>
+                    </div>
+                    <button type="submit" class="btn btn-success" value="Sign Up">Sign Up</button>
+                </form>
+            </div>
+        </div> 
     </section>
 
     <script src="js/vendor/aws-cognito-sdk.min.js"></script>

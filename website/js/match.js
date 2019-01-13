@@ -75,15 +75,10 @@ new Vue({
                 }
                 this.match = response.data.match;
                 if (this.match.date_time < Math.floor(Date.now() / 1000)){
-                    this.betPossible = true;
-                } else {
                     this.betPossible = false;
+                } else {
+                    this.betPossible = true;
                 }
-                // if (this.match.date_time < Math.floor(Date.now() / 1000)){
-                //     this.betPossible = false;
-                // } else {
-                //     this.betPossible = true;
-                // }
                 this.match.date_time = timeConverter(this.match.date_time);
             })
             .catch(e => {
@@ -120,7 +115,7 @@ new Vue({
                     console.log(e);
                 });
             } else {
-                alert("You must enter an integer");
+                alert("You must enter an integer.");
             }
         },        
         likeComment: function (comment) {
@@ -170,4 +165,15 @@ new Vue({
             });
         }
     },
+});
+
+new Vue({
+    el: '#signout',
+    methods: {
+        signout: function () {
+            console.log('signout');
+            cognitoUser.signOut();
+            if(!alert("Successfully signed out")){window.location.reload();}
+        }
+    }
 });

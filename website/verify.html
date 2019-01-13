@@ -4,15 +4,40 @@
 <head>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO"
         crossorigin="anonymous">
-    <h1>Verify Email</h1>
+    <title>Befree - Verify</title> 
 </head>
 
 <body>
-    <form id="verifyForm" @submit.prevent="submit">
+    <h1 style="text-align: center; margin-top:20px;">Verify your email address</h1>
+    <hr/>
+
+<!--     <form id="verifyForm" @submit.prevent="submit">
         <input type="email" id="emailInputVerify" placeholder="Email" v-model="email" required>
         <input type="text" id="codeInputVerify" placeholder="Verification Code" v-model="code" pattern=".*" required>
         <input type="submit" value="Verify">
-    </form>
+    </form> -->
+
+    <div class="row">
+        <div class="offset-3 col-6">
+            <form id="verifyForm" @submit.prevent="submit">
+                <div class="form-group">
+                    <label for="emailInputVerify">Email address</label>
+                    <input type="email" class="form-control" id="emailInputVerify" v-model="email" aria-describedby="emailHelp" placeholder="example@email.com" required>
+                </div>
+                    <div class="form-group">
+                    <label for="codeInputVerify">Code</label>
+                    <input type="text" class="form-control" id="codeInputVerify" placeholder="*****" v-model="code" pattern=".*"
+                    required>
+                    <small id="codeHelp" class="form-text text-muted">Check your email inbox or spam folder for your verification code.</small>
+                </div>
+                <button type="submit" class="btn btn-success" value="Verify">Verify</button>
+            </form>
+        </div>
+    </div>
+
+    <hr/>
+    <h5 style="text-align: center; margin-top:5px;">Go back later to ./verify.html in case you do not want to verify your email address right now.</h5>    
+  
 
     <script src="js/vendor/aws-cognito-sdk.min.js"></script>
     <script src="js/vendor/amazon-cognito-identity.min.js"></script>
