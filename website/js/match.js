@@ -39,7 +39,6 @@ var authToken;
 if (cognitoUser){
     console.log('user', cognitoUser);
     document.getElementById('signinbutton').innerHTML = '<h4><span class="badge badge-secondary" style="margin-right:10px; margin-top:10px;">'+cognitoUser.username+'</span></h4>';
-    document.getElementById('signout').style.display = 'block';
 }
 
 if (cognitoUser) {
@@ -55,6 +54,7 @@ if (cognitoUser) {
     });
 }
 
+var currentMatchId;
 new Vue({
     el: "#app",
     data: function () {
@@ -82,18 +82,30 @@ new Vue({
                     this.betPossible = true;
                 }
                 this.match.date_time = timeConverter(this.match.date_time);
+                currentMatchId = this.match.id;
             })
             .catch(e => {
                 console.log(e);
             });
-        axios.get(_config.api.getBetPointsUrl + '?username=' + cognitoUser.username)
-            .then(response => {
-                this.betPoints = response.data.betPoints;
-                console.log(response.data.betPoints)
-            })
-            .catch(e => {
-                console.log(e);
-            });
+        if (cognitoUser){    
+            axios.get(_config.api.getBetPointsUrl + '?username=' + cognitoUser.username)
+                .then(response => {
+                    this.betPoints = response.data.betPoints;
+                    console.log(response.data.betPoints)
+                })
+                .catch(e => {
+                    console.log(e);
+                });
+            document.getElementById('betDivUser').style.display = 'block';
+            document.getElementById('betDivNotUser').style.display = 'none';
+            document.getElementById('commentUser').style.display = 'block';
+            document.getElementById('commentNotUser').style.display = 'none';                 
+        } else {
+            document.getElementById('betDivNotUser').style.display = 'block';
+            document.getElementById('betDivUser').style.display = 'none';
+            document.getElementById('commentNotUser').style.display = 'block';
+            document.getElementById('commentUser').style.display = 'none';
+        }
     },
     methods: {
         postBet: function (matchId, scorePred) {
@@ -142,7 +154,7 @@ new Vue({
         },
         goToLink: function(str){
             var replaced = str.split(' ').join('+');
-            window.location.href = "https://google.com/search?q="+str;
+            window.open("https://google.com/search?q="+str, '_blank');
         },
         postComment: function (matchId, content) {
             console.log(content);
@@ -171,15 +183,4 @@ new Vue({
             });
         }
     },
-});
-
-new Vue({
-    el: '#signout',
-    methods: {
-        signout: function () {
-            console.log('signout');
-            cognitoUser.signOut();
-            if(!alert("Successfully signed out")){window.location.reload();}
-        }
-    }
 });

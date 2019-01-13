@@ -44,6 +44,14 @@
   margin-left: 20px;
 }
 
+.btnLikes{
+  float:right;
+}
+
+#betDivUser, #commentUser{
+  display:none;
+}
+
 /* LOADER taken from https://freefrontend.com/css-loaders/ Author Animated Creativity 28.08.2017 Free of use */
 .holder {
   position: absolute;

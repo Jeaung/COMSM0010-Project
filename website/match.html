@@ -26,7 +26,6 @@
                     <a href="signin.html" class="btn btn-outline-success">Sign in</a>
                     <a href="register.html" class="btn btn-outline-primary">Sign up</a>
                 </div>
-                <div id="signout"><button @click="signout" class="btn btn btn-outline-danger">Sign out</button></div>
             </form>
         </div>
     </nav>
@@ -38,7 +37,6 @@
 
                     <h2>Match Details</h2>
                     <!-- <hr/> -->
-
                     <div id="matchCard">
                         <div class="card" style="width: 18rem;">
                             <div class="card-body">
@@ -55,51 +53,69 @@
                             </div>
                         </div>
                     </div>
-                </div>
-                <div class="col-5">
-                    <h2 style="text-align:center;">Bet</h2>
+
+                    <hr/>
+                    <h2>Bet</h2>
                     <!-- <hr/> -->
-                    <span>You currently have {{betPoints}} points you can bet. You can bet on this match until the match begins.</span>
-                    <br/>
-                    <br/>
-                    <div v-if="betPossible">
-                        <div class="form-group row">
-                            <label for="bettingNumber" class="col-6 col-form-label">Bet your points</label>
-                            <div class="col-5">
-                                <input type="number" class="form-control" id="bettingNumber" name="bettingNumber" placeholder="0" step="1" min="1">
-                            </div>
-                        </div>
-                        <button type="button" class="btn btn-info" @click="postBet(match.id, 'H')">Home team wins</button>
-                        <button type="button" class="btn btn-secondary" @click="postBet(match.id, 'D')">Draw</button>
-                        <button type="button" class="btn btn-info" @click="postBet(match.id, 'A')">Away team wins</button>
-                    </div>
-                    <div v-else> You can no longer bet on this match</div>
-                </div>
-            </div>
-            <hr/>
-
-            <div class="row">
-                <div class="offset-1 col-5">
-                    <h3>Comment section</h3>
-
-                    <div class="form-group">
-                        
-                        <textarea class="form-control" id="exampleFormControlTextarea1" rows="3" v-model="content"></textarea>
+                    <div id="betDivUser">
+                        <span>You currently have {{betPoints}} points you can bet. You can bet on this match until the match begins.</span>
                         <br/>
-                        <label for="exampleFormControlTextarea1">Post a comment</label>
-                        <button type="button" id="buttonPostComment" class="btn btn-secondary" @click="postComment(match.id, content)">Post</button>
+                        <br/>
+                        <div v-if="betPossible">
+                            <div class="form-group row">
+                                <label for="bettingNumber" class="col-6 col-form-label">Bet your points</label>
+                                <div class="col-5">
+                                    <input type="number" class="form-control" id="bettingNumber" name="bettingNumber" placeholder="0" step="1" min="1">
+                                </div>
+                            </div>
+                            <button type="button" class="btn btn-info" @click="postBet(match.id, 'H')">Home team wins</button>
+                            <button type="button" class="btn btn-secondary" @click="postBet(match.id, 'D')">Draw</button>
+                            <button type="button" class="btn btn-info" @click="postBet(match.id, 'A')">Away team wins</button>
+                        </div>
+                        <div v-else> You can no longer bet on this match</div>
+                    </div>
+                    <div id="betDivNotUser">You need to sign in in order to be able to bet. 
                     </div>
                 </div>
+
+                <div class="col-5">
+                    <h2>Comment section</h2>
+                    <hr/>
+
+                    <div id="commentUser">
+                        
+                        <div class="form-group">
+                            
+                            <textarea placeholder="You can only comment once per match." class="form-control" id="exampleFormControlTextarea1" rows="3" v-model="content"></textarea>
+                            <br/>
+                            <label for="exampleFormControlTextarea1">Post a comment</label>
+                            <button type="button" id="buttonPostComment" class="btn btn-secondary" @click="postComment(match.id, content)">Post</button>
+                        </div>
+                    </div>
+                    <div id="commentNotUser">You need to sign in in order to post comments.
+                    </div>
+                    <hr/>
+
+                    <div class="list-group" id="commentSection" v-for="comment in comments">
+                        <a class="list-group-item list-group-item-action">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h5 class="mb-1">{{comment.User}}</h5>
+                                <small class="text-muted">{{comment.Likes}} Likes</small>
+                            </div>
+                            <p class="mb-1">{{comment.Content}}</p>
+                            <small class="text-muted">{{comment.Created}} <button type="button" class="btnLikes btn btn-primary btn-sm" @click="likeComment(comment)">Like</button></small>
+                        </a>
+                    </div>
+
+         <!--            <ul v-for="comment in comments">
+                        <li>{{comment.User}}:
+                            <br> {{comment.Content}}
+                            <br> Posted on {{comment.Created}}
+                            <br> likes: {{comment.Likes}} <button @click="likeComment(comment)">Like</button>
+                        </li>
+                    </ul>   -->                
+                </div>
             </div>
-            
-            
-            <ul v-for="comment in comments">
-                <li>{{comment.User}}:
-                    <br> {{comment.Content}}
-                    <br> Posted on {{comment.Created}}
-                    <br> likes: {{comment.Likes}} <button @click="likeComment(comment)">Like</button>
-                </li>
-            </ul>
         </div>
     </div>
 

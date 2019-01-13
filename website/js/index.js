@@ -126,12 +126,12 @@ new Vue({
                 .catch(e => {
                     console.log(e);
                 })
-                document.getElementById('rankingsConnected').style.display = 'block';
-                document.getElementById('rankingsNotConnected').style.display = 'none';                
-            } else {
-                document.getElementById('rankingsNotConnected').style.display = 'block';
-                document.getElementById('rankingsConnected').style.display = 'none';
-            }
+            document.getElementById('rankingsConnected').style.display = 'block';
+            document.getElementById('rankingsNotConnected').style.display = 'none';                
+        } else {
+            document.getElementById('rankingsNotConnected').style.display = 'block';
+            document.getElementById('rankingsConnected').style.display = 'none';
+        }
         document.getElementById('home').style.display = 'block';
         document.getElementById('loader').style.display = 'none';    
     },
