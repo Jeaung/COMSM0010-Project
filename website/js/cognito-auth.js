@@ -27,7 +27,7 @@ new Vue({
                             window.location.href = 'verify.html';
                         }
                     } else {
-                        alert('register failed', err);
+                        alert('register failed:' + err.message);
                     }
                 }
             );
