@@ -102,7 +102,7 @@ exports.betHandler = async (event, context, callback) => {
             console.log('got time and date of match ', dateTime_match);
             var diffInSecs;
 
-            if (dateTime_match < dateTime_bet){
+            if (dateTime_match < dateTime_bet) {
                 diffInSecs = dateTime_bet - dateTime_match;
                 console.log('the user tried to bet after the match started. The difference in seconds is ', diffInSecs);
                 return_value = "The match has already started. You can't bet anymore."
@@ -312,13 +312,15 @@ exports.matchDetailHandler = async (event, context, callback) => {
 
         var params = {
             TableName: "Comment",
+            IndexName: "CommentSI",
             KeyConditionExpression: "#id = :matchId",
             ExpressionAttributeNames: {
                 "#id": "MatchId"
             },
             ExpressionAttributeValues: {
                 ":matchId": matchId
-            }
+            },
+            ScanIndexForward: false
         };
 
         var result = await ddb.query(params).promise();
@@ -337,6 +339,18 @@ exports.matchDetailHandler = async (event, context, callback) => {
         };
     } catch (e) {
         console.log('get match detail failed', e);
+        return {
+            headers: {
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Request-Method': 'POST, GET, OPTIONS, DELETE, OPTION, PUT',
+                'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+                'Access-Control-Allow-Credentials': 'true',
+            },
+            statusCode: 500,
+            body: JSON.stringify({
+                err: e.message
+            })
+        };
     }
 }
 

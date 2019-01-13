@@ -330,6 +330,28 @@ Resources:
                                             - Ref: AWS::AccountId
                                             - ":table/"
                                             - Ref: CommentTable
+                            - 
+                                Effect: Allow
+                                Action:
+                                    - dynamodb:DeleteItem
+                                    - dynamodb:GetItem
+                                    - dynamodb:BatchGetItem
+                                    - dynamodb:BatchWriteItem
+                                    - dynamodb:PutItem
+                                    - dynamodb:Query
+                                    - dynamodb:Scan
+                                    - dynamodb:UpdateItem
+                                Resource:
+                                    Fn::Join:
+                                        - ''
+                                        - 
+                                            - 'arn:aws:dynamodb:'
+                                            - Ref: AWS::Region
+                                            - ":"
+                                            - Ref: AWS::AccountId
+                                            - ":table/"
+                                            - Ref: CommentTable
+                                            - "/index/CommentSI"
                             -
                                 Effect: Allow
                                 Action:
@@ -518,6 +540,9 @@ Resources:
                 - 
                     AttributeName: "User"
                     AttributeType: "S"
+                -
+                    AttributeName: "Created"
+                    AttributeType: "N"
             KeySchema:
                 -
                     AttributeName: "MatchId"
@@ -525,6 +550,18 @@ Resources:
                 - 
                     AttributeName: "User"
                     KeyType: "RANGE"
+            LocalSecondaryIndexes:
+                - 
+                    IndexName: "CommentSI"
+                    KeySchema: 
+                        - 
+                            AttributeName: "MatchId"
+                            KeyType: "HASH"
+                        - 
+                            AttributeName: "Created"
+                            KeyType: "RANGE"
+                    Projection:
+                        ProjectionType: ALL
             ProvisionedThroughput:
                 ReadCapacityUnits: 5
                 WriteCapacityUnits: 5               
