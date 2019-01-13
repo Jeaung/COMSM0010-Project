@@ -1,8 +1,33 @@
+var poolData = {
+    UserPoolId: _config.cognito.userPoolId,
+    ClientId: _config.cognito.userPoolClientId
+};
+
+var userPool = new AmazonCognitoIdentity.CognitoUserPool(poolData);
+var cognitoUser = userPool.getCurrentUser();
+console.log('user', cognitoUser);
+var authToken;
+
+if (cognitoUser) {
+    cognitoUser.getSession(function sessionCallback(err, session) {
+        if (err) {
+            console.log(err);
+        } else if (!session.isValid()) {
+            console.log('session invalid');
+        } else {
+            authToken = session.getIdToken().getJwtToken();
+            console.log('auth token', authToken);
+        }
+    });
+}
+
 new Vue({
-    el: '#matchTable',
+    el: '#app',
     data: function () {
         return {
-            matches: []
+            matches: [],
+            rankings: [],
+            user_ranking: []
         }
     },
     created: function () {
@@ -13,9 +38,20 @@ new Vue({
                 var currentMatch;
                 for (var k = 0; k<this.matches.length; k++){
                     currentMatch = this.matches[k]
-                    console.log(currentMatch.date_time);
+                    //console.log(currentMatch.date_time);
                     currentMatch.date_time = timeConverter(currentMatch.date_time);
                 }
+            })
+        axios.get(_config.api.getRankingsUrl + '?username=' + cognitoUser.username)
+            .then(response => {
+                this.rankings = response.data.rankings;
+                if (response.data.userRanking.result !== ""){
+                    document.getElementById('userRankingDiv').innerHTML = response.data.userRanking.result;
+                } else {
+                    this.user_ranking.push(response.data.userRanking);
+                }
+                console.log(response.data);
+                console.log(this.rankings);
             })
             .catch(e => {
                 console.log(e);
@@ -63,25 +99,3 @@ function timeConverter(UNIX_timestamp){
     return time;
 }
 
-var poolData = {
-    UserPoolId: _config.cognito.userPoolId,
-    ClientId: _config.cognito.userPoolClientId
-};
-
-var userPool = new AmazonCognitoIdentity.CognitoUserPool(poolData);
-var cognitoUser = userPool.getCurrentUser();
-console.log('user', cognitoUser);
-var authToken;
-
-if (cognitoUser) {
-    cognitoUser.getSession(function sessionCallback(err, session) {
-        if (err) {
-            console.log(err);
-        } else if (!session.isValid()) {
-            console.log('session invalid');
-        } else {
-            authToken = session.getIdToken().getJwtToken();
-            console.log('auth token', authToken);
-        }
-    });
-}

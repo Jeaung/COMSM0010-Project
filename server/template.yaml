@@ -142,6 +142,33 @@ Resources:
                 Fn::GetAtt:
                     - BackingLambdaExecutionRole
                     - Arn
+
+    GetRankingsFunction:
+        Type: AWS::Serverless::Function
+        Properties:
+            CodeUri: befree/
+            Handler: app.getRankings
+            Runtime: nodejs8.10
+            Events:
+                GetRankings:
+                    Type: Api
+                    Properties:
+                        Path: /rankings
+                        Method: get
+                        RestApiId: !Ref BefreeApi
+            Role:
+                Fn::GetAtt:
+                    - BackingLambdaExecutionRole
+                    - Arn
+            VpcConfig:
+                SecurityGroupIds:
+                    -
+                        Fn::GetAtt:
+                            - SecurityGroup
+                            - GroupId
+                SubnetIds:
+                    - Ref: Subnet1
+                    - Ref: Subnet2
     
     GetMatchesFunction:
         Type: AWS::Serverless::Function
