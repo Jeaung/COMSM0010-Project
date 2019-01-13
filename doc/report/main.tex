@@ -43,13 +43,12 @@ they can climb up to the top of the rankings the better they
 are at predicting scores. We also want to create an environment
 where people can share their opinions about football by
 posting comments. Our goal is to attract users from the huge football
-fan base in the world (an estimated 4 billion people follow
-football in the world).
+fan base in the world.
 
 When users sign up for BeFree, they will be initially
 allocated a certain amount of points. Users will be able to bet
 those points and the website will encourage them to compete
-and communicate around football. Users can bet on several
+and communicate about football. Users can bet on several
 aspects of a match such as the outcome of the match, the
 number of goals scored, which players scored, etc. Each aspect
 accounts when awarding points to users. The more points they
@@ -95,7 +94,7 @@ BeFree employs AWS Simple Storage Service (S3) \cite{b6} to host its static webs
 We adopt Amazon Cognito \cite{b8} to do user management and authentication since it's already a mature solution and saves us a lot of time.
 
 \subsection{Database}
-For databases, we use both Amazon DynamoDB \cite{b9} and Amazon Aurora \cite{b10}. DynamoDB is used to store typical key-value data such as comments and bettings. Amazon Aurora, as a relational database, stores match data and because we need flexible queries against matches such as date time, status or league. In addition, the queries does not provide a key so DynamoDB is inapplicable here (Its Scan does not meet demands either because the data needs to be sorted). The main advantage of using Amazon Aurora is that Amazon Aurora Serverless \cite{b11} allows it to automatically start up, shut down, and scale capacity up or down based on application's needs.
+For databases, we use both Amazon DynamoDB \cite{b9} and Amazon Aurora \cite{b10}. DynamoDB is used to store typical key-value data such as comments. Amazon Aurora, as a relational database, stores match data and provides flexible queries against matches such as date time, status or league. These queries do not provide a key so DynamoDB is inapplicable here (its scan does not meet demands either because the data needs to be sorted). The main advantage of using Amazon Aurora is that Amazon Aurora Serverless \cite{b11} allows it to automatically start up, shut down, and scale capacity up or down based on application's needs.
 
 The reason for including DynamoDB instead of only using Aurora is that, for key-value data, DynamoDB outperforms Aurora with peaks of more than 20 million requests per second \cite{b9} while Aurora, as RDS, can only reach a maximum of about 200000 IOPS \cite{b12} \cite{b13}. Furthermore, in terms of pricing, in early stages, DynamoDB is basically free \cite{b14}. On the other hand, Aurora is charged by the hour as long as it's active \cite{b15}.
 
@@ -108,11 +107,11 @@ Overall, each component of BeFree is fully managed by AWS and is able to auto-sc
 
 We did some load test against two of our representative APIs. The load test tool we use is RedLine13 \cite{b19} and it uses EC2 instances on AWS to issue load test requests. Due to the limit of our budget we haven't gone far in terms of Requests Per Second and the load tests don't last very long accordingly. But the result still demonstrate the scalability of our system, in specific, auto scale capability since we did not interfere the system with its settings or configurations during load test period.
 
-The first API is the get matches API which is called each time users visit the home page of BeFree. This API is backed by Aurora Serverless. The result shows that response time remains stable and low as load continuously increases. And according to the RDS console the number of Aurora capacity units increases with load.
+The first API is the get matches API which is called each time users visit the home page of BeFree. This API is backed by Aurora Serverless. The result shows that response time remains stable and low as load continuously increases. And according to the RDS console the number of Aurora capacity units increases with load automatically.
 
 \begin{figure}[htbp]
  \centerline{\includegraphics[scale=0.26]{matches-qps.png}}
-\caption{Get Matches API QPS}
+\caption{Get Matches API Requests Per Second}
 \end{figure}
 
 \begin{figure}[htbp]
@@ -120,11 +119,11 @@ The first API is the get matches API which is called each time users visit the h
 \caption{Get Matches API Response Time}
 \end{figure}
 
-The second API we test is comment API which is a writing (POST) API. It's called when users post comments on football matches. The underpinning services are Cognito and DynamoDB. Cognito verifies the Authorisation header of the request because only signed-in users are allowed to write comments and the comment data is put into DynamoDB table. In the production environment, DynamoDB can be configured to be auto-scalable but because of budget constraint we explicitly specify the write capacity units to 1000. Similar to get matches API, the performance of comment API is impressive. One thing to note is that, in case some requests times out occasionally (e.g. network instability) the behaviour of RedLine13 becomes unpredictable as it stops increasing load and the data on the graph becomes totally wrong. As a consequence, the figure only displays a maximum QPS of about 900.
+The second API we test is comment API which is a writing (POST) API. It's called when users post comments on football matches. The underpinning services are Cognito and DynamoDB. Cognito verifies the Authorisation header of the request because only signed-in users are allowed to write comments and the comment data is put into a DynamoDB table. In the production environment, DynamoDB can be configured to be auto-scalable but because of budget constraint we explicitly specify the write capacity units to 1000. Similar to get matches API, the performance of comment API is good as expected. One thing to note is that in some cases which we are not sure of the cause, as load tests go on, the behaviour of RedLine13 becomes weird. The data on the graphs has a sudden increase to tens of thousands which is wrong. As a consequence, we chose a figure which only displays a maximum Requests Per Second of about 900. However, we believe that DynamoDB has the capability to scale and serve much heavier loads and so does the comment API.
 
 \begin{figure}[htbp]
 \centerline{\includegraphics[scale=0.26]{comment-qps.png}}
-\caption{Comment API QPS}
+\caption{Comment API Requests Per Second}
 \end{figure}
 
 \begin{figure}[htbp]
@@ -143,7 +142,7 @@ Firstly, in our current architecture, web pages are not fully rendered before th
 
 Secondly, we now only get football match data only from one 3rd party API, we plan to adapt several other APIs and add some retry strategies to our crawler function to improve data availability.
 
-Thirdly, our home page serves to fetch and display match data from Aurora. Although Aurora Serverless is able to auto-scale, we could potentially cut down our cost and improve performance by introducing a cache layer using Amazon ElasticCache \cite{b18}. Compared to Aurora, ElasticCache with all the data in memory is able to respond in sub-millisecond time. However, extra complexity will arise because data consistency in ElasticCache and Aurora needs to be guaranteed.
+Thirdly, our home page serves to fetch and display match data from Aurora. Although Aurora Serverless is able to auto-scale, we could potentially cut down our cost and improve performance by introducing a cache layer using Amazon ElasticCache \cite{b18}. Unlike Aurora, ElasticCache with all the data in memory is able to respond in sub-millisecond time. However, extra complexity will arise because data consistency in ElasticCache and Aurora needs to be guaranteed.
 
 \section{Conclusion}
 
