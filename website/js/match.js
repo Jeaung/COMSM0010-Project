@@ -36,6 +36,12 @@ var cognitoUser = userPool.getCurrentUser();
 console.log('user', cognitoUser);
 var authToken;
 
+if (cognitoUser){
+    console.log('user', cognitoUser);
+    document.getElementById('signinbutton').innerHTML = '<h4><span class="badge badge-secondary" style="margin-right:10px; margin-top:10px;">'+cognitoUser.username+'</span></h4>';
+    document.getElementById('signout').style.display = 'block';
+}
+
 if (cognitoUser) {
     cognitoUser.getSession(function sessionCallback(err, session) {
         if (err) {
@@ -47,10 +53,6 @@ if (cognitoUser) {
             console.log('auth token', authToken);
         }
     });
-}
-
-function goHome() {
-    window.location.href = window.location.origin + "/index.html";
 }
 
 new Vue({
@@ -137,6 +139,10 @@ new Vue({
             }).catch(e => {
                 console.log(e);
             });
+        },
+        goToLink: function(str){
+            var replaced = str.split(' ').join('+');
+            window.location.href = "https://google.com/search?q="+str;
         },
         postComment: function (matchId, content) {
             console.log(content);

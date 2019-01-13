@@ -9,6 +9,7 @@ var cognitoUser = userPool.getCurrentUser();
 if (cognitoUser){
     console.log('user', cognitoUser);
     document.getElementById('signinbutton').innerHTML = '<h4><span class="badge badge-secondary" style="margin-right:10px; margin-top:10px;">'+cognitoUser.username+'</span></h4>';
+    document.getElementById('signout').style.display = 'block'; 
 }
 
 var authToken;

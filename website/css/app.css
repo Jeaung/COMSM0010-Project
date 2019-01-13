@@ -10,7 +10,7 @@
 	margin: 20px;
 }
 
-#home, #rankings, #about, #rankingsConnected{
+#home, #rankings, #about, #rankingsConnected, #signout{
 	display: none;
 }
 
@@ -24,6 +24,24 @@
 
 #rankingsNotConnected{
 	text-align: center;
+}
+
+#content{
+	text-align: center;
+}
+
+#matchCard {
+  width: 55%;
+  margin: 0 auto;
+}
+
+#exampleFormControlTextarea1{
+  width: 70%;
+  margin: 0 auto;
+}
+
+#buttonPostComment{
+  margin-left: 20px;
 }
 
 /* LOADER taken from https://freefrontend.com/css-loaders/ Author Animated Creativity 28.08.2017 Free of use */
