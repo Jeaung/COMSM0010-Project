@@ -83,7 +83,7 @@ new Vue({
                 //     this.betPossible = false;
                 // } else {
                 //     this.betPossible = true;
-                // }                
+                // }
                 this.match.date_time = timeConverter(this.match.date_time);
             })
             .catch(e => {
