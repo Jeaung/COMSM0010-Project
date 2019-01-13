@@ -37,3 +37,4 @@ packaged.yaml
 .bin/
 server/befree/config/default.json
 website/js/config.js
+.vscode/

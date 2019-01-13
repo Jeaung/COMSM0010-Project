@@ -262,47 +262,7 @@ Resources:
                             - GroupId
                 SubnetIds:
                     - Ref: Subnet1
-                    - Ref: Subnet2
-
-    InitBettingHandler:
-        Type: AWS::Serverless::Function
-        Properties:
-            CodeUri: befree/
-            Handler: bet.initBettingHandler
-            Runtime: nodejs8.10
-            Role:
-                Fn::GetAtt:
-                    - BackingLambdaExecutionRole
-                    - Arn
-            VpcConfig:
-                SecurityGroupIds:
-                    -
-                        Fn::GetAtt:
-                            - SecurityGroup
-                            - GroupId
-                SubnetIds:
-                    - Ref: Subnet1
-                    - Ref: Subnet2
-
-    InitRankingFunction:
-        Type: AWS::Serverless::Function
-        Properties:
-            CodeUri: befree/
-            Handler: bet.initRankingsHandler
-            Runtime: nodejs8.10
-            Role:
-                Fn::GetAtt:
-                    - BackingLambdaExecutionRole
-                    - Arn
-            VpcConfig:
-                SecurityGroupIds:
-                    -
-                        Fn::GetAtt:
-                            - SecurityGroup
-                            - GroupId
-                SubnetIds:
-                    - Ref: Subnet1
-                    - Ref: Subnet2                    
+                    - Ref: Subnet2                   
 
     ScheduledRule: 
         Type: "AWS::Events::Rule"

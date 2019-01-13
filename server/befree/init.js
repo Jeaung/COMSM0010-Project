@@ -11,15 +11,20 @@ exports.initHandler = async (event, context, callback) => {
             user: config.get('db_config.user'),
             password: config.get('db_config.password')
         });
-        var dbRes = await connection.query('create database if not exists ' + config.get('db_config.database'));
 
-        console.log('create database result', dbRes);
+        var db = config.get('db_config.database');
 
-        var dropRes = await connection.query('drop table if exists ' + config.get('db_config.database') + '.matches');
-        console.log('drop table result', dropRes);     
+        var result = await connection.query('create database if not exists ' + db);
+        console.log('create database result', result);
 
-        var result = await connection.query('create table if not exists ' + config.get('db_config.database') + '.matches (id bigint unsigned, home_team varchar(64), away_team varchar(64), home_score tinyint unsigned, away_score tinyint unsigned, status varchar(16), date_time bigint unsigned, primary key (id)) ENGINE=InnoDB DEFAULT CHARSET=utf8;');
-        console.log('create table result', result);
+        result = await connection.query('create table if not exists ' + db + '.matches (id bigint unsigned, home_team varchar(64), away_team varchar(64), home_score tinyint unsigned, away_score tinyint unsigned, status varchar(16), date_time bigint unsigned, primary key (id)) ENGINE=InnoDB DEFAULT CHARSET=utf8;');
+        console.log('create matches table result', result);
+
+        result = await connection.query('create table if not ´exists ' + db + '.bets (id_bet bigint unsigned auto_increment not null, username varchar(255), match_id bigint unsigned, bet_value bigint unsigned, score_predicted char(1), date_time bigint unsigned, PRIMARY KEY (id_bet)) ENGINE=InnoDB DEFAULT CHARSET=utf8;');
+        console.log('create bets table result', result);
+
+        result = await connection.query('create table if not exists ' + db + '.rankings (id_rankings bigint unsigned auto_increment not null, username varchar(255), bet_points bigint unsigned, PRIMARY KEY (id_rankings)) ENGINE=InnoDB DEFAULT CHARSET=utf8;');
+        console.log('create rankings table result', result);
 
         return "success";
     } catch (e) {

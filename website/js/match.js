@@ -1,30 +1,30 @@
 
-function timeConverter(UNIX_timestamp){
+function timeConverter(UNIX_timestamp) {
     var a = new Date(UNIX_timestamp * 1000);
-    var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     var year = a.getFullYear();
     var month = months[a.getMonth()];
     var date = a.getDate();
     var hour = a.getHours().toString();;
-    if (hour.length == 1){
+    if (hour.length == 1) {
         hour = "0" + hour
     }
     var min = a.getMinutes().toString();;
-    if (min.length == 1){
+    if (min.length == 1) {
         min = "0" + min
     }
     var sec = a.getSeconds().toString();
-    if (sec.length === 1){
+    if (sec.length === 1) {
         sec = "0" + sec;
-    }    
-    var time = date + ' ' + month + ' ' + year + ' ' + hour + ':' + min + ':' + sec ;
+    }
+    var time = date + ' ' + month + ' ' + year + ' ' + hour + ':' + min + ':' + sec;
     return time;
 }
 
 function isInt(value) {
-  return !isNaN(value) && 
-         parseInt(Number(value)) == value && 
-         !isNaN(parseInt(value, 10));
+    return !isNaN(value) &&
+        parseInt(Number(value)) == value &&
+        !isNaN(parseInt(value, 10));
 }
 
 var poolData = {
@@ -49,8 +49,8 @@ if (cognitoUser) {
     });
 }
 
-function goHome(){
-    window.location.href = window.location.origin+"/index.html";
+function goHome() {
+    window.location.href = window.location.origin + "/index.html";
 }
 
 new Vue({
@@ -60,7 +60,7 @@ new Vue({
             comments: [],
             match: null,
             content: "",
-            betPossible:false,
+            betPossible: false,
             betPoints: 0
         }
     },
@@ -70,8 +70,8 @@ new Vue({
         axios.get(_config.api.matchDetailUrl + '?id=' + urlParams.get('id'))
             .then(response => {
                 this.comments = response.data.comments;
-                for (var k = 0; k<this.comments.length; k++){
-                    this.comments[k].Created = timeConverter(this.comments[k].Created);                   
+                for (var k = 0; k < this.comments.length; k++) {
+                    this.comments[k].Created = timeConverter(this.comments[k].Created);
                 }
                 this.match = response.data.match;
                 if (this.match.date_time < Math.floor(Date.now() / 1000)){
@@ -83,7 +83,7 @@ new Vue({
             })
             .catch(e => {
                 console.log(e);
-            });        
+            });
         axios.get(_config.api.getBetPointsUrl + '?username=' + cognitoUser.username)
             .then(response => {
                 this.betPoints = response.data.betPoints;
@@ -91,12 +91,12 @@ new Vue({
             })
             .catch(e => {
                 console.log(e);
-            });            
+            });
     },
     methods: {
         postBet: function (matchId, scorePred) {
             console.log('bet', matchId, scorePred, document.getElementById('bettingNumber').value);
-            if (isInt(document.getElementById('bettingNumber').value)){
+            if (isInt(document.getElementById('bettingNumber').value)) {
                 axios({
                     url: _config.api.betUrl,
                     data: {
@@ -110,14 +110,14 @@ new Vue({
                     method: 'post'
                 }).then(response => {
                     console.log(response.data);
-                    if(!alert(response.data.return_value)){window.location.reload();}
+                    if (!alert(response.data.return_value)) { window.location.reload(); }
                 }).catch(e => {
                     console.log(e);
                 });
             } else {
                 alert("You must enter an integer.");
             }
-        },        
+        },
         likeComment: function (comment) {
             console.log('like', comment.User, comment.MatchId, authToken);
 
@@ -139,7 +139,7 @@ new Vue({
             });
         },
         postComment: function (matchId, content) {
-            console.log(content);     
+            console.log(content);
             axios({
                 url: _config.api.commentUrl,
                 data: {
@@ -157,10 +157,10 @@ new Vue({
                     'User': cognitoUser.username,
                     "Content": content,
                     'Likes': 0,
-                    // 'Created': Math.floor(Date.now() / 1000),
-                    'Created': timeConverter(Math.floor(Date.now() / 1000))
+                    'Created': timeConverter(Math.floor(response.data.timestamp))
                 });
             }).catch(e => {
+                alert(e.response.data.err);
                 console.log(e);
             });
         }

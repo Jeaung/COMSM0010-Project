@@ -35,7 +35,12 @@ exports.commentHandler = async (event, context, callback) => {
                 "Content": body.content,
                 'Likes': 0,
                 'Created': created
-            }
+            },
+            ExpressionAttributeNames: {
+                "#MatchId": "MatchId",
+                "#User": "User"
+            },
+            ConditionExpression: "attribute_not_exists(#MatchId) AND attribute_not_exists(#User)"
         };
 
         var res = await ddb.put(params).promise();
@@ -108,7 +113,7 @@ exports.betHandler = async (event, context, callback) => {
 
                 var userCrtPoints;
                 const [rows2, fields2] = await promisePool.query('SELECT * from rankings where username = ?', [username]);
-                
+
                 if (rows2.length > 0) {
                     rows2.forEach(element => {
                         userCrtPoints = element.bet_points;
@@ -116,7 +121,7 @@ exports.betHandler = async (event, context, callback) => {
                     console.log('got the number of points of the user ', userCrtPoints);
                     var diffInPoints = userCrtPoints - userBetPoints;
 
-                    if (diffInPoints >= 0){
+                    if (diffInPoints >= 0) {
                         // add bet
                         var resultInsert = await promisePool.query("INSERT INTO bets (username, match_id, bet_value, score_predicted, date_time) VALUES (?, ?, ?, ?, ?)", [username, match_id, userBetPoints, score_predicted, dateTime_bet]);
                         console.log('inserted into table the bet', resultInsert);
@@ -181,7 +186,7 @@ exports.getUserBettingPoints = async (event, context, callback) => {
 
             rows2.forEach(element => {
                 betPoints = element.bet_points;
-                });
+            });
 
             console.log('inserted and got betting points', betPoints);
         }
@@ -206,7 +211,7 @@ exports.getUserBettingPoints = async (event, context, callback) => {
 exports.getRankings = async (event, context, callback) => {
     var username = event["queryStringParameters"]['username'];
     console.log('user', username);
-    var userRanking = {result:"", rank:0, username:"", bet_points:0};
+    var userRanking = { result: "", rank: 0, username: "", bet_points: 0 };
     var k;
 
     try {
@@ -215,13 +220,13 @@ exports.getRankings = async (event, context, callback) => {
         if (rows.length > 0) {
             console.log('got rankings points', rows);
 
-            var [rows2, fields2] = await promisePool.query("SELECT rank, username, bet_points FROM (SELECT @rn:=@rn+1 AS rank, username, bet_points FROM (SELECT username, bet_points FROM rankings ORDER BY bet_points DESC)z, (SELECT @rn:=0)y) AS T WHERE username = ?", [username]); 
+            var [rows2, fields2] = await promisePool.query("SELECT rank, username, bet_points FROM (SELECT @rn:=@rn+1 AS rank, username, bet_points FROM (SELECT username, bet_points FROM rankings ORDER BY bet_points DESC)z, (SELECT @rn:=0)y) AS T WHERE username = ?", [username]);
 
             if (rows2.length > 0) {
                 rows2.forEach(element => {
                     userRanking.rank = element.rank;
                     userRanking.username = element.username;
-                    userRanking.bet_points = element.bet_points;              
+                    userRanking.bet_points = element.bet_points;
                 });
                 console.log('got rankings points of user', userRanking);
             } else {
