@@ -15,9 +15,13 @@ const pool = mysql.createPool({
 });
 const promisePool = pool.promise();
 
-exports.commentHandler = async (event, context, callback) => {
+exports.commentHandler = async (event) => {
     // console.log('event', event);
     // console.log('context', context);
+    if (event['detail-type'] == 'Scheduled Event') {
+        console.log('warmed');
+        return 'warmed';
+    }
 
     const username = event.requestContext.authorizer.claims['cognito:username'];
 
@@ -77,7 +81,12 @@ exports.commentHandler = async (event, context, callback) => {
     }
 }
 
-exports.betHandler = async (event, context, callback) => {
+exports.betHandler = async (event) => {
+    if (event['detail-type'] == 'Scheduled Event') {
+        console.log('warmed');
+        return 'warmed';
+    }
+
     const username = event.requestContext.authorizer.claims['cognito:username'];
     var body = JSON.parse(event.body);
 
@@ -162,7 +171,12 @@ exports.betHandler = async (event, context, callback) => {
     }
 }
 
-exports.getUserBettingPoints = async (event, context, callback) => {
+exports.getUserBettingPoints = async (event) => {
+    if (event['detail-type'] == 'Scheduled Event') {
+        console.log('warmed');
+        return 'warmed';
+    }
+
     var username = event["queryStringParameters"]['username'];
     console.log('user', username);
     var betPoints;
@@ -208,7 +222,12 @@ exports.getUserBettingPoints = async (event, context, callback) => {
     }
 }
 
-exports.getRankings = async (event, context, callback) => {
+exports.getRankings = async (event) => {
+    if (event['detail-type'] == 'Scheduled Event') {
+        console.log('warmed');
+        return 'warmed';
+    }
+
     var username = event["queryStringParameters"]['username'];
     console.log('user', username);
     var userRanking = { result: "", rank: 0, username: "", bet_points: 0 };
@@ -256,7 +275,12 @@ exports.getRankings = async (event, context, callback) => {
     }
 }
 
-exports.likeHandler = async (event, context, callback) => {
+exports.likeHandler = async (event) => {
+    if (event['detail-type'] == 'Scheduled Event') {
+        console.log('warmed');
+        return 'warmed';
+    }
+
     var body = JSON.parse(event.body);
 
     console.log('like comment req body', body, 'headers', event.headers['Origin']);
@@ -294,7 +318,12 @@ exports.likeHandler = async (event, context, callback) => {
     }
 }
 
-exports.matchDetailHandler = async (event, context, callback) => {
+exports.matchDetailHandler = async (event) => {
+    if (event['detail-type'] == 'Scheduled Event') {
+        console.log('warmed');
+        return 'warmed';
+    }
+
     var matchId = parseInt(event["queryStringParameters"]['id']);
 
     console.log('match detail id', matchId);
@@ -354,7 +383,12 @@ exports.matchDetailHandler = async (event, context, callback) => {
     }
 }
 
-exports.getMatchesHandler = async (event, context, callback) => {
+exports.getMatchesHandler = async (event) => {
+    if (event['detail-type'] == 'Scheduled Event') {
+        console.log('warmed');
+        return 'warmed';
+    }
+
     try {
         // TODO date_time constraint on SQL
         const [rows, fields] = await promisePool.query("SELECT * FROM matches ORDER BY date_time DESC");

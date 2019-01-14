@@ -6,6 +6,8 @@ const mysql = require('mysql2/promise');
 const config = require('config');
 
 exports.accountingHandler = async (event, context, callback) => {
+    console.log('event source', event);
+
     var today = moment();
     var yesterday = moment().subtract(1, 'days');
 

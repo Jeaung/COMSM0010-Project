@@ -67,6 +67,18 @@ Resources:
                     - BackingLambdaExecutionRole
                     - Arn
 
+    PermissionForWarmingCommentFunction:
+        Type: "AWS::Lambda::Permission"
+        Properties: 
+            FunctionName: 
+                Ref: "CommentFunction"
+            Action: "lambda:InvokeFunction"
+            Principal: "events.amazonaws.com"
+            SourceArn: 
+                Fn::GetAtt: 
+                    - "WarmerScheduledRule1"
+                    - "Arn"
+
     BetFunction:
         Type: AWS::Serverless::Function
         Properties:
@@ -94,7 +106,19 @@ Resources:
                             - GroupId
                 SubnetIds:
                     - Ref: Subnet1
-                    - Ref: Subnet2                      
+                    - Ref: Subnet2   
+                    
+    PermissionForWarmingBetFunction:
+        Type: "AWS::Lambda::Permission"
+        Properties: 
+            FunctionName: 
+                Ref: "BetFunction"
+            Action: "lambda:InvokeFunction"
+            Principal: "events.amazonaws.com"
+            SourceArn: 
+                Fn::GetAtt: 
+                    - "WarmerScheduledRule1"
+                    - "Arn"
 
     GetBetPointsFunction:
         Type: AWS::Serverless::Function
@@ -123,6 +147,18 @@ Resources:
                     - Ref: Subnet1
                     - Ref: Subnet2   
 
+    PermissionForWarmingGetBetPointsFunction:
+        Type: "AWS::Lambda::Permission"
+        Properties: 
+            FunctionName: 
+                Ref: "GetBetPointsFunction"
+            Action: "lambda:InvokeFunction"
+            Principal: "events.amazonaws.com"
+            SourceArn: 
+                Fn::GetAtt: 
+                    - "WarmerScheduledRule1"
+                    - "Arn"
+
     LikeFunction:
         Type: AWS::Serverless::Function
         Properties:
@@ -142,6 +178,18 @@ Resources:
                 Fn::GetAtt:
                     - BackingLambdaExecutionRole
                     - Arn
+
+    PermissionForWarmingLikeFunction:
+        Type: "AWS::Lambda::Permission"
+        Properties: 
+            FunctionName: 
+                Ref: "LikeFunction"
+            Action: "lambda:InvokeFunction"
+            Principal: "events.amazonaws.com"
+            SourceArn: 
+                Fn::GetAtt: 
+                    - "WarmerScheduledRule1"
+                    - "Arn"
 
     GetRankingsFunction:
         Type: AWS::Serverless::Function
@@ -169,6 +217,18 @@ Resources:
                 SubnetIds:
                     - Ref: Subnet1
                     - Ref: Subnet2
+
+    PermissionForWarmingGetRankingsFunction:
+        Type: "AWS::Lambda::Permission"
+        Properties: 
+            FunctionName: 
+                Ref: "GetRankingsFunction"
+            Action: "lambda:InvokeFunction"
+            Principal: "events.amazonaws.com"
+            SourceArn: 
+                Fn::GetAtt: 
+                    - "WarmerScheduledRule2"
+                    - "Arn"
     
     GetMatchesFunction:
         Type: AWS::Serverless::Function
@@ -196,6 +256,18 @@ Resources:
                 SubnetIds:
                     - Ref: Subnet1
                     - Ref: Subnet2
+    
+    PermissionForWarmingGetMatchesFunction:
+        Type: "AWS::Lambda::Permission"
+        Properties: 
+            FunctionName: 
+                Ref: "GetMatchesFunction"
+            Action: "lambda:InvokeFunction"
+            Principal: "events.amazonaws.com"
+            SourceArn: 
+                Fn::GetAtt: 
+                    - "WarmerScheduledRule1"
+                    - "Arn"
 
     MatchDetailFunction:
         Type: AWS::Serverless::Function
@@ -223,6 +295,18 @@ Resources:
                 SubnetIds:
                     - Ref: Subnet1
                     - Ref: Subnet2
+
+    PermissionForWarmingMatchDetailFunction:
+        Type: "AWS::Lambda::Permission"
+        Properties: 
+            FunctionName: 
+                Ref: "MatchDetailFunction"
+            Action: "lambda:InvokeFunction"
+            Principal: "events.amazonaws.com"
+            SourceArn: 
+                Fn::GetAtt: 
+                    - "WarmerScheduledRule2"
+                    - "Arn"
     
     CrawlerFunction:
         Type: AWS::Serverless::Function
@@ -264,7 +348,7 @@ Resources:
                     - Ref: Subnet1
                     - Ref: Subnet2                   
 
-    ScheduledRule: 
+    CrawlerScheduledRule: 
         Type: "AWS::Events::Rule"
         Properties: 
             ScheduleExpression: "cron(0 1 * * ? *)"
@@ -286,8 +370,64 @@ Resources:
             Principal: "events.amazonaws.com"
             SourceArn: 
                 Fn::GetAtt: 
-                    - "ScheduledRule"
+                    - "CrawlerScheduledRule"
                     - "Arn"
+
+    WarmerScheduledRule1: 
+        Type: "AWS::Events::Rule"
+        Properties: 
+            ScheduleExpression: "cron(0/10 * * * ? *)"
+            State: "ENABLED"
+            Targets: 
+                - 
+                    Arn: 
+                        Fn::GetAtt: 
+                            - "CommentFunction"
+                            - "Arn"
+                    Id: "WarmCommentFunction"
+                - 
+                    Arn: 
+                        Fn::GetAtt: 
+                            - "BetFunction"
+                            - "Arn"
+                    Id: "WarmBetFunction"
+                - 
+                    Arn: 
+                        Fn::GetAtt: 
+                            - "LikeFunction"
+                            - "Arn"
+                    Id: "WarmLikeFunction"
+                - 
+                    Arn: 
+                        Fn::GetAtt: 
+                            - "GetBetPointsFunction"
+                            - "Arn"
+                    Id: "WarmGetBetPointsFunction"
+                - 
+                    Arn: 
+                        Fn::GetAtt: 
+                            - "GetMatchesFunction"
+                            - "Arn"
+                    Id: "WarmGetMatchesFunction"
+
+    WarmerScheduledRule2: 
+        Type: "AWS::Events::Rule"
+        Properties: 
+            ScheduleExpression: "cron(0/10 * * * ? *)"
+            State: "ENABLED"
+            Targets: 
+                - 
+                    Arn: 
+                        Fn::GetAtt: 
+                            - "GetRankingsFunction"
+                            - "Arn"
+                    Id: "WarmGetRankingsFunction"
+                - 
+                    Arn: 
+                        Fn::GetAtt: 
+                            - "MatchDetailFunction"
+                            - "Arn"
+                    Id: "WarmMatchDetailFunction"
     
     BackingLambdaExecutionRole:
         DependsOn: CommentTable
