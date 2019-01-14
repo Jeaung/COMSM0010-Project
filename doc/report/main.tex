@@ -28,7 +28,7 @@
 \begin{abstract}
 BeFree is an online community for football fans where
 people bet on football matches, compete with other users
-to earn points and write comments of football matches to communicate with each other. It is a serverless application hosted on Amazon Web Services and can be accessed at https://s3.eu-west-2.amazonaws.com/befree-uob/index.html. Source code of BeFree can be found at https://github.com/Jeaung/COMSM0010-Project.
+to earn points and write comments of football matches to communicate with each other. It is a serverless application hosted on Amazon Web Services.Source code of BeFree can be found at https://github.com/Jeaung/COMSM0010-Project. The application can be run online at https://s3.eu-west-2.amazonaws.com/befree-uob/index.html.
 \end{abstract}
 
 \begin{IEEEkeywords}
@@ -40,43 +40,32 @@ BeFree is an application where people can bet on football
 matches without using money. Money is replaced here by
 points which people can get by predicting correctly. Then,
 they can climb up to the top of the rankings the better they
-are at predicting scores. We also want to create an environment
+are at predicting scores. This is also an environment
 where people can share their opinions about football by
 posting comments. Our goal is to attract users from the huge football
 fan base in the world.
 
-When users sign up for BeFree, they will be initially
-allocated a certain amount of points. Users will be able to bet
-those points and the website will encourage them to compete
-and communicate about football. Users can bet on several
-aspects of a match such as the outcome of the match, the
-number of goals scored, which players scored, etc. Each aspect
+When users sign up for BeFree, they are initially
+allocated 20 points. Users can bet
+their points and the website encourages them to compete
+and communicate about football. Users can bet on the outcome of the match. Each aspect
 accounts when awarding points to users. The more points they
 bet, the more they can win or lose at the end of the match.
-In addition, there will be ranking lists after every match in
+In addition, there are ranking lists updated regularly in
 which users are ranked by the points they win or how well
 their guesses are.
 
 Users can also write comments and interact with each other
-by liking or disliking others’ comments. They can earn points
+by liking others’ comments. They can earn points
 by writing top comments on matches which have been liked
 by other users. This procedure will facilitate users to interact
 with each other and make them stick to the application.
 
 \section{Cloudification}
-We choose Amazon Web Services (AWS) \cite{b1} as our hosting platform for several reasons. Firstly, our system architecture is inspired by AWS Serverless Application Model (SAM) \cite{b2} which we believe is a trivial way to build a scalable system. Secondly, we are able to apply for AWS Educate free credits sufficient to build our project. Thirdly, AWS Cloudformation \cite{b3} provides the function of infrastructure as code so as a group of two, we benefit from it an easily reproducible infrastructure in group work.
+We choose Amazon Web Services (AWS) \cite{AWS} as our hosting platform for several reasons. Firstly, our system architecture is inspired by AWS Serverless Application Model (SAM) \cite{SAM} which we believe is a trivial way to build a scalable system. Secondly, we are able to apply for AWS Educate free credits sufficient to build our project. Thirdly, AWS Cloudformation \cite{cloudformation} provides the function of infrastructure as code so as a group of two, we benefit from it an easily reproducible infrastructure in group work.
 
 \section{System Architecture}
-Choosing to apply a serverless architecture is mainly because AWS SAM provides several benefits \cite{b2}. 
-\begin{itemize}
-\item Single-deployment configuration
-\item Extension of AWS CloudFormation
-\item Built-in best practices
-\item Local debugging and testing
-\item Deep integration with development tools
-\end{itemize}
-
-And bearing in mind the key of scalability, we make extensive use of existing services provided by AWS and push availability guarantee and scalability capability to AWS, the service provider, so that we only need to focus on building our core business logic.
+Bearing in mind the key of scalability, we make extensive use of existing services provided by AWS and push availability guarantee and scalability capability to AWS, the service provider, so that we only need to focus on building our core business logic.
 
 \begin{figure}[htbp]
 \centerline{\includegraphics{architecture.png}}
@@ -85,27 +74,29 @@ And bearing in mind the key of scalability, we make extensive use of existing se
 \end{figure}
 
 \subsection{Serverless}
-All code is run in AWS Lambda \cite{b4} functions because Lambda takes care of server provisioning and management and offers auto-scalability and high availability which is very useful for the scalability of our system APIs. In BeFree, another usage of Lambda function is to pull football match data from 3rd party APIs routinely. We call it crawler function. This is done by configuring a CloudWatch \cite{b5} event using a cron expression to trigger the Lambda function periodically.
+All code is run in AWS Lambda \cite{lambda} functions because Lambda takes care of server provisioning and management and offers auto-scalability and high availability which is very useful for the scalability of our system APIs. In BeFree, another usage of Lambda function is to pull football match data from 3rd party APIs routinely. We call it crawler function. This is done by configuring a CloudWatch \cite{cloudwatch} event using a cron expression to trigger the Lambda function periodically.
+
+It's worth noting that a downside of using Lambda functions is that they have a cold start phase the first time they are invoked and in some other circumstances \cite{lambda-contex}. The time it takes is usually long (5 to 10 seconds in our case) so it hurts user experience once users happen to encounter one. So we adopt an approach commonly suggested in industry which is periodically invoking all lambda functions to prevent them getting 'cold' and therefore solve the cold start issue \cite{about-cold-start} \cite{resolve-cold-start}.
 
 \subsection{Site Hosting}
-BeFree employs AWS Simple Storage Service (S3) \cite{b6} to host its static website resources such as HTML, CSS, Javascript and images. When users visit our website, the web browser fetches web pages from S3 and Javascript code calls Lambda functions through API Gateway \cite{b7} and display data on the pages.
+BeFree employs AWS Simple Storage Service (S3) \cite{s3} to host its static website resources such as HTML, CSS, Javascript and images. When users visit our website, the web browser fetches web pages from S3 and Javascript code calls Lambda functions through API Gateway \cite{api-gateway} and displays data on the pages.
 
 \subsection{User Management}
-We adopt Amazon Cognito \cite{b8} to do user management and authentication since it's already a mature solution and saves us a lot of time.
+We adopt Amazon Cognito \cite{cognito} to do user management and authentication since it's already a mature solution and saves us a lot of time.
 
 \subsection{Database}
-For databases, we use both Amazon DynamoDB \cite{b9} and Amazon Aurora \cite{b10}. DynamoDB is used to store typical key-value data such as comments. Amazon Aurora, as a relational database, stores match data and provides flexible queries against matches such as date time, status or league. These queries do not provide a key so DynamoDB is inapplicable here (its scan does not meet demands either because the data needs to be sorted). The main advantage of using Amazon Aurora is that Amazon Aurora Serverless \cite{b11} allows it to automatically start up, shut down, and scale capacity up or down based on application's needs.
+For databases, we use both Amazon DynamoDB \cite{dynamodb} and Amazon Aurora \cite{aurora}. DynamoDB is used to store typical key-value data such as comments. Amazon Aurora, as a relational database, stores match data and provides flexible queries against matches such as date time, status or league. These queries do not provide a key so DynamoDB is inapplicable here (its scan does not meet demands either because the data needs to be sorted). The main advantage of using Amazon Aurora is that Amazon Aurora Serverless \cite{aurora-serverless} allows it to automatically start up, shut down, and scale capacity up or down based on application's needs.
 
-The reason for including DynamoDB instead of only using Aurora is that, for key-value data, DynamoDB outperforms Aurora with peaks of more than 20 million requests per second \cite{b9} while Aurora, as RDS, can only reach a maximum of about 200000 IOPS \cite{b12} \cite{b13}. Furthermore, in terms of pricing, in early stages, DynamoDB is basically free \cite{b14}. On the other hand, Aurora is charged by the hour as long as it's active \cite{b15}.
+The reason for including DynamoDB instead of only using Aurora is that, for key-value data, DynamoDB outperforms Aurora with peaks of more than 20 million requests per second \cite{dynamodb} while Aurora, as RDS, can only reach a maximum of about 200000 IOPS \cite{rds-mysql} \cite{aurora-feature}. Furthermore, in terms of pricing, in early stages, DynamoDB is basically free \cite{dynamodb-pricing}. On the other hand, Aurora is charged by the hour as long as it's active \cite{aurora-pricing}.
 
 \section{Scalability}
-Scalability remains a vital part in designing a web application and it aims to remove or mitigate system bottlenecks. Intuitively, bottlenecks of a system fall into two groups i.e. internal and external. Internal bottlenecks lie in both hardware (CPU, memory, network etc.) and software not being able to fully utilising the hardware resources. Because the number of AWS Lambda functions increases as system traffic grows, more hardware resource and software instances are allocated in isolation \cite{b14}. Thus, in BeFree, internal bottlenecks could be eliminated by Lambda's auto scaling.
+Scalability remains a vital part in designing a web application and it aims to remove or mitigate system bottlenecks. Intuitively, bottlenecks of a system fall into two groups i.e. internal and external. Internal bottlenecks lie in both hardware (CPU, memory, network etc.) and software not being able to fully utilising the hardware resources. Because the number of AWS Lambda functions increases as system traffic grows, more hardware resource and software instances are allocated in isolation \cite{dynamodb-pricing}. Thus, in BeFree, internal bottlenecks could be eliminated by Lambda's auto-scaling.
 
-On the other hand, external bottlenecks are the ones of the system's depending services. The directly depending services of BeFree are S3, Aurora, DynamoDB, API Gateway and Cognito. S3 hosts static web resources which users directly interact with. As claimed by AWS, S3 scales storage resources up and down to meet fluctuating demands so it's not a bottleneck of our system. Aurora, with its serverless configuration, can also seamlessly scale compute and memory capacity as needed, with no disruption to client connections. Again, this is not a bottleneck for scaling. Similar to Aurora Serverless, DynamoDB is said to be able to automatically scales tables up and down to adjust for capacity and maintain performance. According to its website, API Gateway creates, maintains, and secures APIs at any scale. Finally, Amazon Cognito User Pools provide a secure user directory that scales to hundreds of millions of users.
+On the other hand, external bottlenecks are the ones of the system's depending services. The directly depending services of BeFree are S3, Aurora, DynamoDB, API Gateway and Cognito. S3 hosts static web resources which users directly interact with. As claimed by AWS, S3 scales storage resources up and down to meet fluctuating demands so it's not a bottleneck of our system. Aurora, with its serverless configuration, can also seamlessly scale compute and memory capacity as needed, with no disruption to client connections. Again, this is not a bottleneck for scaling. Similar to Aurora Serverless, DynamoDB is said to be able to automatically scale tables up and down in order to adjust for capacity and maintain performance. According to its website, API Gateway creates, maintains, and secures APIs at any scale. Finally, Amazon Cognito User Pools provide a secure user directory that scales to hundreds of millions of users.
 
-Overall, each component of BeFree is fully managed by AWS and is able to auto-scale to some extent. So theoretically, BeFree has the capability to auto-scale with the applied services of AWS.
+Overall, each component of BeFree is fully managed by AWS and is able to auto-scale to some extent. So theoretically, BeFree has the capability to auto-scale with the services of AWS.
 
-We did some load test against two of our representative APIs. The load test tool we use is RedLine13 \cite{b19} and it uses EC2 instances on AWS to issue load test requests. Due to the limit of our budget we haven't gone far in terms of Requests Per Second and the load tests don't last very long accordingly. But the result still demonstrate the scalability of our system, in specific, auto scale capability since we did not interfere the system with its settings or configurations during load test period.
+We did some load test against two of our representative APIs. The load test tool we use is RedLine13 \cite{redline13} and it uses EC2 instances on AWS to issue load test requests. Due to the limit of our budget we haven't gone far in terms of Requests Per Second and the load tests don't last very long accordingly. But the result still demonstrates the scalability of our system, in specific, auto-scale capability since we did not interfere the system with its settings or configurations during load test period.
 
 The first API is the get matches API which is called each time users visit the home page of BeFree. This API is backed by Aurora Serverless. The result shows that response time remains stable and low as load continuously increases. And according to the RDS console the number of Aurora capacity units increases with load automatically.
 
@@ -133,16 +124,59 @@ The second API we test is comment API which is a writing (POST) API. It's called
 
 
 \section{Design and Implementation}
-TODO could write about user walkthrough, betting and ranking design and implementation
+\subsection{Technologies used to implement Befree}
+Regarding the back-end of the application, our choice leant towards using the open-soucre, cross platform JavaScript environment Node.js \cite{node}. The reasons for this choice are that using JavaScript on both back-end and front-end simplifies the implementation of the application and Node.js also allows an asynchronous programming which made it to a popular choice for applications over the past few years. We also resorted to use some Node modules. For instance, Moment.js \cite{moment} allowed us to get, manipulate and display dates and times in JavaScript which is used to get the dates of comments, matches, bets to name but a few.
+
+In terms of the front-end, we notably used Bootstrap 4.1 \cite{bootstrap}, a collection of tool useful when designing the website. It greatly simplified the work in terms of style sheets and sizing of the different elements on the web pages. Moreover, we resorted to using Vue.js \cite{vue} in order to simplify and organise the code by limiting the usage of the DOM. Furthermore, as web pages aren't fully rendered before delivering them to web browsers, we used a free of use loader \cite{loader} which is displayed before the list of matches appear on the home page.  
+
+\subsection{User walkthrough}
+When a user arrive on Befree, he can either choose to sign in/up and use the website to its full extent or he can visit the website without signing in/up and see the matches, details and comments but in that case he is restricted as he can't access the interesting functionalities of the website. When the user signs up, he provides an email address which will serve as its username and a password. The user is then asked to give a verification code which was sent to its email address.
+
+\begin{figure}[htbp]
+\centerline{\includegraphics[scale=0.26]{register.png}}
+\caption{Registration page}
+\end{figure}
+
+\begin{figure}[htbp]
+\centerline{\includegraphics[scale=0.26]{signin.png}}
+\caption{Sign in page}
+\end{figure}
+
+Once the user is registered and signed in, the user can start betting and commenting. On the home screen he can see two lists of matches ordered by older to new. On the right there are the ongoing and finished matches where the user can't bet anymore but still can see the result, comment about the match and like other comments. On the left, there are the matches of the day which haven't started yet. 
+
+\begin{figure}[htbp]
+\centerline{\includegraphics[scale=0.2]{home_page.png}}
+\caption{Home page of Befree}
+\end{figure}
+
+When he access the match page, the user can see his current number of points. If it is the first time that the user accessed a match page, he is given 20 points and inserted into the rankings table. He can then bet any integer he wants from 1 point. He then chooses either to bet his points on the home team winning, on a draw or the away team winning. When requesting to make a bet, the back-end verifies if we can still bet on the match, if the user has a sufficient amount of points as a user could try to bet on multiple pages at the same time. If he matches those demands, his bet is registered. He can bet as many times as he wants until he got no points left. A user can also comment once and like other comments.
+
+As mentioned earlier, once per day, new matches are retrieved from the API and become the new upcoming matches. As soon as this is done, we retrieve all bets done on the previous day matches and attribute points to the gamblers which depends on the total of bets done, the total of bets successful and the result of the match. Because Befree is supposed to be entertaining and not frustrating application, we decided to give 2 points to users who loose all their points so that they can still play with the app.
+
+\begin{figure}[htbp]
+\centerline{\includegraphics[scale=0.2]{match_page.png}}
+\caption{Match page}
+\end{figure}
+
+Users can see their current rank in the rankings tab on the home page as well as the ranking of the best gamblers on Befree. It is updated every time the user goes to the home page.
+
+\begin{figure}[htbp]
+\centerline{\includegraphics[scale=0.2]{rankings.png}}
+\caption{Rankings page}
+\end{figure}
+
+Other functionalities exist like accessing information on the teams when clicking the links displayed on the matches pages or accessing the github repository on the About Us tab of the home page.
 
 \section{Future Work}
 In the future, there are several aspects which we can improve.
 
-Firstly, in our current architecture, web pages are not fully rendered before they are delivered to web browsers. Instead, Javascript code in web pages fetches data from our API and render them dynamically. Some search engines such as Baidu simply does not process Javascript in web pages \cite{b17}. Thus, our current approach is not search engine optimised so we may return the fully rendered pages to browsers in the future.
+Firstly, in our current architecture, web pages are not fully rendered before they are delivered to web browsers. Instead, JavaScript code in web pages fetches data from our API and render them dynamically. Some search engines such as Baidu simply does not process JavaScript in web pages \cite{index-js}. Thus, our current approach is not search engine optimised so we may return the fully rendered pages to browsers in the future.
 
 Secondly, we now only get football match data only from one 3rd party API, we plan to adapt several other APIs and add some retry strategies to our crawler function to improve data availability.
 
-Thirdly, our home page serves to fetch and display match data from Aurora. Although Aurora Serverless is able to auto-scale, we could potentially cut down our cost and improve performance by introducing a cache layer using Amazon ElasticCache \cite{b18}. Unlike Aurora, ElasticCache with all the data in memory is able to respond in sub-millisecond time. However, extra complexity will arise because data consistency in ElasticCache and Aurora needs to be guaranteed.
+Thirdly, our home page serves to fetch and display match data from Aurora. Although Aurora Serverless is able to auto-scale, we could potentially cut down our cost and improve performance by introducing a cache layer using Amazon ElasticCache \cite{elasticcache}. Unlike Aurora, ElasticCache, with all the data in memory, is able to respond in sub-millisecond time. However, extra complexity will arise because data consistency in ElasticCache and Aurora needs to be guaranteed.
+
+Finally, we could add more functionalities: betting on other aspects of the matches like the scorers, add more rankings, day to day rankings for instance. We add also planned to give points to user getting likes but we didn't implement that functionality. Those are a few examples of the vast amount of work which could be added to Befree.
 
 \section{Conclusion}
 In this paper, we have presented the online community for football fans - BeFree which is a serverless application hosted on AWS. We have also shown that by applying AWS Serverless Application Model, we can build auto-scalable web applications in an easy way. While building this application, we exploit as many managed services in AWS as possible because they save us time, let us focus on our core businesses and lie the key for auto-scaling.
@@ -150,25 +184,35 @@ In this paper, we have presented the online community for football fans - BeFree
 However, there are still things we can do to make the application more searchable, improve its data availability and cut our cost.
 
 \begin{thebibliography}{00}
-\bibitem{b1} Amazon, “Amazon Web Services” https://aws.amazon.com/. Accessed: 2019-01-07.
-\bibitem{b2} “AWS Serverless Application Model” https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/what-is-sam.html. Accessed: 2019-01-07.
-\bibitem{b3} “AWS Cloudformation” https://aws.amazon.com/cloudformation/. Accessed: 2019-01-07.
-\bibitem{b4} “AWS Lambda” https://aws.amazon.com/lambda/. Accessed: 2019-01-07.
-\bibitem{b5} “AWS CloudWatch” https://aws.amazon.com/cloudwatch/. Accessed: 2019-01-07.
-\bibitem{b6} “Amazon Simple Storage Service” https://aws.amazon.com/s3/. Accessed: 2019-01-07.
-\bibitem{b7} “Amazon API Gateway” https://aws.amazon.com/api-gateway/. Accessed: 2019-01-07.
-\bibitem{b8} “Amazon Cognito” https://aws.amazon.com/cognito/. Accessed: 2019-01-07.
-\bibitem{b9} “Amazon DynamoDB” https://aws.amazon.com/dynamodb/. Accessed: 2019-01-07.
-\bibitem{b10} “Amazon Aurora” https://aws.amazon.com/rds/aurora/. Accessed: 2019-01-07.
-\bibitem{b11} “Amazon Aurora Serverless” https://aws.amazon.com/rds/aurora/serverless/. Accessed: 2019-01-07.
-\bibitem{b12} “Amazon RDS for MySQL, Fast, predictable storage” https://aws.amazon.com/rds/mysql/\#Fast.2C\_predictable\_storage. Accessed: 2019-01-07.
-\bibitem{b13} “Amazon Aurora Features: MySQL-Compatible Edition, High Performance and Scalability“ https://aws.amazon.com/rds/aurora/details/mysql-details/\#High\_Performance\_and\_Scalability. Accessed: 2019-01-07.
-\bibitem{b14} “Amazon DynamoDB Pricing“ https://aws.amazon.com/dynamodb/pricing/on-demand/\#DynamoDB\_free\_tier. Accessed: 2019-01-07.
-\bibitem{b15} “Amazon Aurora Pricing“ https://aws.amazon.com/rds/aurora/pricing/. Accessed: 2019-01-07.
-\bibitem{b16} “Understanding Container Reuse in AWS Lambda“ https://aws.amazon.com/blogs/compute/container-reuse-in-lambda/. Accessed: 2019-01-07.
-\bibitem{b17} Bartosz Góralewicz, “Going Beyond Google: Are Search Engines Ready for JavaScript Crawling \& Indexing?“ https://moz.com/blog/search-engines-ready-for-javascript-crawling. Accessed: 2019-01-07.
-\bibitem{b18} “Amazon ElasticCache“ https://aws.amazon.com/elasticache/. Accessed: 2019-01-07.
-\bibitem{b19} “RedLine13“ https://www.redline13.com/. Accessed: 2019-01-07.
+\bibitem{AWS} Amazon, “Amazon Web Services” https://aws.amazon.com/. Accessed: 2019-01-07.
+\bibitem{SAM} “AWS Serverless Application Model” https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/what-is-sam.html. Accessed: 2019-01-07.
+\bibitem{cloudformation} “AWS Cloudformation” https://aws.amazon.com/cloudformation/. Accessed: 2019-01-07.
+\bibitem{lambda} “AWS Lambda” https://aws.amazon.com/lambda/. Accessed: 2019-01-07.
+\bibitem{cloudwatch} “AWS CloudWatch” https://aws.amazon.com/cloudwatch/. Accessed: 2019-01-07.
+\bibitem{lambda-contex} “AWS Lambda Execution Context“
+
+https://docs.aws.amazon.com/lambda/latest/dg/running-lambda-code.html. Accessed: 2019-01-13.
+\bibitem{about-cold-start} Serhat Can, “Everything you need to know about cold starts in AWS Lambda“ https://hackernoon.com/cold-starts-in-aws-lambda-f9e3432adbf0. Accessed: 2019-01-13.
+\bibitem{resolve-cold-start} Lakshman Diwaakar, “Resolving Cold Start in AWS Lambda“ https://medium.com/@lakshmanLD/resolving-cold-start-in-aws-lambda-804512ca9b61. Accessed: 2019-01-13.
+\bibitem{s3} “Amazon Simple Storage Service” https://aws.amazon.com/s3/. Accessed: 2019-01-07.
+\bibitem{api-gateway} “Amazon API Gateway” https://aws.amazon.com/api-gateway/. Accessed: 2019-01-07.
+\bibitem{cognito} “Amazon Cognito” https://aws.amazon.com/cognito/. Accessed: 2019-01-07.
+\bibitem{dynamodb} “Amazon DynamoDB” https://aws.amazon.com/dynamodb/. Accessed: 2019-01-07.
+\bibitem{aurora} “Amazon Aurora” https://aws.amazon.com/rds/aurora/. Accessed: 2019-01-07.
+\bibitem{aurora-serverless} “Amazon Aurora Serverless” https://aws.amazon.com/rds/aurora/serverless/. Accessed: 2019-01-07.
+\bibitem{rds-mysql} “Amazon RDS for MySQL, Fast, predictable storage” https://aws.amazon.com/rds/mysql/\#Fast.2C\_predictable\_storage. Accessed: 2019-01-07.
+\bibitem{aurora-feature} “Amazon Aurora Features: MySQL-Compatible Edition, High Performance and Scalability“ https://aws.amazon.com/rds/aurora/details/mysql-details/\#High\_Performance\_and\_Scalability. Accessed: 2019-01-07.
+\bibitem{dynamodb-pricing} “Amazon DynamoDB Pricing“ https://aws.amazon.com/dynamodb/pricing/on-demand/\#DynamoDB\_free\_tier. Accessed: 2019-01-07.
+\bibitem{aurora-pricing} “Amazon Aurora Pricing“ https://aws.amazon.com/rds/aurora/pricing/. Accessed: 2019-01-07.
+\bibitem{understand-container-reuse} “Understanding Container Reuse in AWS Lambda“ https://aws.amazon.com/blogs/compute/container-reuse-in-lambda/. Accessed: 2019-01-07.
+\bibitem{node} "Node.js" https://nodejs.org/en/. Accessed: 2019-01-13.
+\bibitem{moment} "Moment.js" https://momentjs.com/. Accessed: 2019-01-13.
+\bibitem{bootstrap} "Bootstrap 4.1" https://getbootstrap.com/. Accessed: 2019-01-13.
+\bibitem{vue} "Vue.js" https://vuejs.org/. Accessed: 2019-01-13.
+\bibitem{loader} "Rotating circles preloader: pure CSS" https://freefrontend.com/css-loaders/. Accessed: 2019-01-13.
+\bibitem{index-js} Bartosz Góralewicz, “Going Beyond Google: Are Search Engines Ready for JavaScript Crawling \& Indexing?“ https://moz.com/blog/search-engines-ready-for-javascript-crawling. Accessed: 2019-01-07.
+\bibitem{elasticcache} “Amazon ElasticCache“ https://aws.amazon.com/elasticache/. Accessed: 2019-01-07.
+\bibitem{redline13} “RedLine13“ https://www.redline13.com/. Accessed: 2019-01-07.
 \end{thebibliography}
 \vspace{12pt}
 

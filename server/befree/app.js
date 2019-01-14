@@ -390,8 +390,7 @@ exports.getMatchesHandler = async (event) => {
     }
 
     try {
-        // TODO date_time constraint on SQL
-        const [rows, fields] = await promisePool.query("SELECT * FROM matches ORDER BY date_time DESC");
+        const [rows, fields] = await promisePool.query("SELECT * FROM matches where date_time > ? ORDER BY date_time DESC limit 100", [moment().unix() - 48 * 3600]);
 
         console.log('get', rows.length, 'matches');
 

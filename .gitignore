@@ -38,3 +38,5 @@ packaged.yaml
 server/befree/config/default.json
 website/js/config.js
 .vscode/
+*.log
+*.aux
