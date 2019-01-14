@@ -651,23 +651,38 @@ Resources:
                 - Ref: Subnet1
                 - Ref: Subnet2
 
-    BefreeDB: 
-        Type: "AWS::RDS::DBInstance"
-        Properties: 
-            DBInstanceIdentifier: "befree"
-            DBName: "befree"
-            AllocatedStorage: "100"
-            DBInstanceClass: "db.t2.micro"
-            Iops: "1000"
-            Engine: "MySQL"
-            EngineVersion: "5.6"
+    # BefreeDB: 
+    #     Type: "AWS::RDS::DBInstance"
+    #     Properties: 
+    #         DBInstanceIdentifier: "befree"
+    #         DBName: "befree"
+    #         AllocatedStorage: "100"
+    #         DBInstanceClass: "db.t2.micro"
+    #         Iops: "1000"
+    #         Engine: "MySQL"
+    #         EngineVersion: "5.6"
+    #         MasterUsername: "befree"
+    #         MasterUserPassword: "12345678"
+    #         DBSubnetGroupName: 
+    #             Ref: DBSubnetGroup
+    #         VPCSecurityGroups:
+    #             - Ref: SecurityGroup
+    #     DeletionPolicy: "Snapshot"
+
+    BefreeDatabaseCluster:
+        Type: AWS::RDS::DBCluster
+        Properties:
+            Engine: aurora
+            EngineMode: serverless
             MasterUsername: "befree"
             MasterUserPassword: "12345678"
-            DBSubnetGroupName: 
-                Ref: DBSubnetGroup
-            VPCSecurityGroups:
-                - Ref: SecurityGroup
-        DeletionPolicy: "Snapshot"
+            DBSubnetGroupName: !Ref "DBSubnetGroup"
+            DeletionProtection: 'false'
+            VpcSecurityGroupIds:
+                -
+                    Fn::GetAtt:
+                        - SecurityGroup
+                        - GroupId
 
     CommentTable:
         Type: AWS::DynamoDB::Table

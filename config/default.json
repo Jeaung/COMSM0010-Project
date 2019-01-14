@@ -1,0 +1,10 @@
+{
+    "_comment": "configuration for server side, mainly database config. move it to server/befree/config directory",
+    "db_config": {
+        "host": "befree.c6kqot0uxo5n.eu-west-2.rds.amazonaws.com",
+        "port": 3306,
+        "database": "befree",
+        "password": "12345678",
+        "user": "befree"
+    }
+}
