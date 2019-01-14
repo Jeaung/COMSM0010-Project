@@ -170,6 +170,7 @@ new Vue({
                 method: 'post'
             }).then(response => {
                 console.log(response.data);
+                this.content = "";
                 this.comments.unshift({
                     "MatchId": matchId,
                     'User': cognitoUser.username,
